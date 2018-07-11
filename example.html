@@ -1,0 +1,808 @@
+
+<!DOCTYPE html>
+<!--
+Author: Robert Lie (mobilefish.com)
+More information:
+https://www.mobilefish.com/developer/blockchain/blockchain_quickguide_ethereum_tools.html
+
+This demonstration Ethereum Dapp uses the DemoContract.sol contract
+https://www.mobilefish.com/download/ethereum/DemoContract.sol.txt
+-->
+<html>
+<head>
+<title>Demonstration Ethereum Dapp</title>
+<!-- Works with web3.min.js version 0.19.0. This web page does not work with version 1.0.0 and up -->
+<script type="text/javascript" src="../../scripts/web3/web3.min.js"></script>
+<script type="text/javascript">
+"use strict";
+
+let eventHandlerPageLoad = function() {
+  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+  if (typeof web3 !== 'undefined') {
+    // Use Mist/MetaMask's provider
+    window.web3 = new Web3(web3.currentProvider);
+  } else {
+    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+  }
+
+  // Immediately execute methods after web page is loaded
+  startApp();
+}
+
+function startApp(){
+  monitorAccountChanges();
+  watchBlockInfo();
+  watchSyncing();
+  reloadPageWhenNoNetwork();
+}
+
+window.addEventListener('load', eventHandlerPageLoad);
+
+// Check if an Ethereum node is available every 5 seconds.
+// I have chosen arbritray 5 seconds.
+function reloadPageWhenNoNetwork(){
+  setInterval(function(){
+    if(!web3.isConnected()){
+      // If an Ethereum node is found, reload web page.
+      eventHandlerPageLoad();
+    }
+  }, 5000);
+}
+
+function monitorAccountChanges() {
+  // Declare accountInterval here! Clear the variable if there is no Ethereum node found.
+  let accountInterval;
+
+  // Check if an Ethereum node is found.
+  if(web3.isConnected()){
+
+    // If a coinbase account is found, automatically update the fromAddress form field with the coinbase account
+    getCoinbasePromise()
+    .then(function(fromAddress){
+      document.getElementById('fromAddress').value = fromAddress;
+    })
+    .catch(function(err){
+      document.getElementById('intervalErrorMessage').innerText = err;
+    });
+
+    let account = web3.eth.accounts[0];
+
+    // At a time interval of 1 sec monitor account changes
+    accountInterval = setInterval(function() {
+
+      // Monitor account changes. If you switch account, for example in MetaMask, it will detect this.
+      // See: https://github.com/MetaMask/faq/blob/master/DEVELOPERS.md
+      if (web3.eth.accounts[0] !== account) {
+        account = web3.eth.accounts[0];
+        document.getElementById('fromAddress').value = account;
+      } else {
+        document.getElementById('intervalErrorMessage').innerText = "No accounts found";
+      }
+      if(account != null) {
+        document.getElementById('intervalErrorMessage').innerText= "";
+      }
+
+      // Check which Ethereum network is used
+      getNetworkPromise()
+      .then(function(network){
+        document.getElementById('network').innerText = "Network: " + network + "\n";
+      })
+      .catch(function(err){
+        console.log(err);
+      });
+
+    }, 1000); // end of accountInterval = setInterval(function()
+
+  } else {
+    // Stop the accountInterval
+    clearInterval(accountInterval);
+    document.getElementById('intervalErrorMessage').innerText = "No Ethereum node found";
+  }
+}
+
+// Continuosly watch the latest block and display some block related information on screen.
+function watchBlockInfo(){
+
+  // Check if an Ethereum node is found.
+  if(web3.isConnected()){
+
+    // This is a callback function
+    getFilterWatch(function() {
+
+      // Promise chain
+      getBlockNumberPromise().then(function(blockNumber){
+        return getBlockPromise(blockNumber);
+      }).then(function(arr){
+        const blockNumber = arr[0];
+        const confirmedBlock = arr[1];
+        document.getElementById('latestBlockNumber').innerText = "Latest block number: "+ blockNumber;
+        document.getElementById('latestBlockHash').innerText = "Latest block hash: "+ confirmedBlock.hash;
+        document.getElementById('latestBlockTimestamp').innerText = "Latest block timestamp: "+ Date(confirmedBlock.timestamp);
+        //console.log("Show all data in confirmedBlock: "+JSON.stringify(confirmedBlock));
+        return getBlockTransactionCountPromise(blockNumber);
+      }).then(function(arr){
+        const blockNumber = arr[0];
+        const numberOfTransactions = arr[1];
+        document.getElementById('numberOfTransactions').innerText = "Number of transactions in block: "+ numberOfTransactions;
+        displayAllTransactionsForBlock(blockNumber, numberOfTransactions);
+      }).catch(function(err){
+        alert("Error: " +err);
+      });
+
+    }); // getFilterWatch(function()
+  } // if(web3.isConnected()){
+}
+
+
+function createContract(){
+  // Each time you modify the DemoContract.sol and deploy it on the blockchain, you need to get the abi value.
+  // Paste the abi value in web3.eth.contract(PASTE_ABI_VALUE);
+  // When the contract is deployed, do not forget to change the contract address, see
+  // formfield id 'contractAddress'
+  // Replace contract address: 0xf1d2e0b8e09f4dda7f3fd6db26496f74079faeeb with your own.
+  //
+  const contractSpec = web3.eth.contract(
+  [{"constant":false,"inputs":[{"name":"_addedVal","type":"uint256"}],"name":"increaseStoredVal","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getStoredVal","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"balances","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"withdrawAmount","type":"uint256"}],"name":"withdraw","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"kill","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getStoredText","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_storedVal","type":"uint256"}],"name":"setStoredVal","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"showHello","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_storedText","type":"string"}],"name":"setStoredText","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"deposit","outputs":[],"payable":true,"type":"function"},{"inputs":[{"name":"_storedVal","type":"uint256"},{"name":"_storedText","type":"string"}],"payable":true,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"accountAddress","type":"address"},{"indexed":false,"name":"amount","type":"uint256"},{"indexed":false,"name":"balance","type":"uint256"}],"name":"LogDeposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"accountAddress","type":"address"},{"indexed":false,"name":"amount","type":"uint256"},{"indexed":false,"name":"balance","type":"uint256"}],"name":"LogWithdraw","type":"event"}]
+  );
+
+  return contractSpec.at(document.getElementById('contractAddress').value);
+}
+
+
+// ===================================================
+// Promises
+// ===================================================
+const getCoinbasePromise = function(){
+  return new Promise(function(resolve, reject){
+    web3.eth.getCoinbase(function(err, res){
+      if (!res) {
+        reject("No accounts found");
+      } else {
+        resolve(res);
+      }
+    });
+  });
+}
+
+const checkAddressPromise = function(address, addressType) {
+  return new Promise(function(resolve, reject){
+    if (address != null && web3.isAddress(address)) {
+      resolve();
+    } else {
+      reject(addressType);
+    }
+  });
+}
+
+const setStoredTextPromise = function(fromAddress, text){
+  return new Promise(function(resolve, reject){
+    const contract = createContract();
+    contract.setStoredText(text, {from: fromAddress}, function (err, txHash) {
+      if(txHash) {
+        resolve(txHash);
+      } else {
+        reject("setStoredTextPromise: " +err);
+      }
+    });
+  });
+}
+
+const setStoredValPromise = function(fromAddress, value) {
+  return new Promise(function(resolve, reject){
+    const contract = createContract();
+    contract.setStoredVal(value, {from: fromAddress}, function (err, txHash) {
+      if(txHash) {
+        resolve(txHash);
+      } else {
+        reject("setStoredValPromise: " +err);
+      }
+    });
+  });
+}
+
+const increaseStoredValPromise = function(fromAddress, amount) {
+  return new Promise(function(resolve, reject){
+    const contract = createContract();
+    contract.increaseStoredVal(amount, {from: fromAddress}, function (err, txHash) {
+      if(txHash) {
+        resolve(txHash);
+      } else {
+        reject("increaseStoredValPromise: " +err);
+      }
+    });
+  });
+}
+
+const depositPromise = function(fromAddress, amountEther) {
+  return new Promise(function(resolve, reject){
+    // Convert from ether to wei
+    const amountWei = web3.toWei(amountEther, 'ether');
+    const contract = createContract();
+    contract.deposit({from: fromAddress, value: amountWei}, function (err, txHash) {
+      if(txHash) {
+        resolve(txHash);
+      } else {
+        reject("depositPromise: " +err);
+      }
+    });
+  });
+}
+
+const withdrawPromise = function(fromAddress, amountEther) {
+  return new Promise(function(resolve, reject){
+    // Convert from ether to wei
+    const amountWei = web3.toWei(amountEther, 'ether');
+    const contract = createContract();
+    contract.withdraw(amountWei, {from: fromAddress}, function (err, txHash) {
+      if(txHash) {
+        resolve(txHash);
+      } else {
+        reject("withdrawPromise: " +err);
+      }
+    });
+  });
+}
+
+const getBlockPromise = function(blockNumber) {
+  return new Promise(function(resolve, reject){
+    web3.eth.getBlock(blockNumber, function(err, confirmedBlock){
+      if(!err) {
+        resolve([blockNumber, confirmedBlock]);
+      } else {
+        reject("getBlockPromise: "+err);
+      }
+    });
+  });
+}
+
+const getBlockNumberPromise = function() {
+  return new Promise(function(resolve, reject){
+    web3.eth.getBlockNumber(function(err, blockNumber){
+      if(blockNumber) {
+        resolve(blockNumber);
+      } else {
+        reject("getBlockNumberPromise: "+err);
+      }
+    });
+  });
+}
+
+const getTransactionFromBlockPromise = function(blockNumber, txIndex) {
+  return new Promise(function(resolve, reject){
+    web3.eth.getTransactionFromBlock(blockNumber, txIndex, function(err, transaction){
+      if(!err) {
+        resolve(transaction);
+      } else {
+        reject("getTransactionFromBlockPromise: "+err);
+      }
+    });
+  });
+}
+
+const getBlockTransactionCountPromise = function(blockNumber) {
+  return new Promise(function(resolve, reject){
+    web3.eth.getBlockTransactionCount(blockNumber, function(err, numberOfTransactions){
+      if(!err) {
+        resolve([blockNumber, numberOfTransactions]);
+      } else {
+        reject("getBlockTransactionCountPromise: "+err);
+      }
+    });
+  });
+}
+
+const getNetworkPromise = function() {
+  return new Promise(function(resolve, reject){
+    // Check which Ethereum network is used
+    web3.version.getNetwork(function(err, res){
+      let selectedNetwork = "";
+
+      if (!err) {
+        if(res > 1000000000000) {
+          // I am not sure about this. I maybe wrong!
+          selectedNetwork = "Testrpc";
+        } else {
+          switch (res) {
+            case "1":
+              selectedNetwork = "Mainnet";
+              break
+            case "2":
+              selectedNetwork = "Morden";
+              break
+            case "3":
+              selectedNetwork = "Ropsten";
+              break
+            case "4":
+              selectedNetwork = "Rinkeby";
+              break
+            default:
+              selectedNetwork = "Unknown network = "+res;
+          }
+        }
+        resolve(selectedNetwork);
+      } else {
+        reject("getBlockTransactionCountPromise: "+err);
+      }
+    });
+  });
+}
+
+const logDepositPromise = function(fromAddress, blockNumber){
+  return new Promise(function(resolve, reject){
+    const contract = createContract();
+    // In DemoContract.sol the LogDeposit event is created:
+    // event LogDeposit(address indexed accountAddress, uint amount, uint balance);
+    // The accountAddress is indexed which means web3.js event can 'filter out' this specific address
+    const eventLogDeposit = contract.LogDeposit({accountAddress: fromAddress}, {fromBlock: blockNumber, toBlock: blockNumber+1000}, function (err, result) {
+      if(err) {
+        // Would stop and uninstall the filter
+        eventLogDeposit.stopWatching(); // This is not working!
+        reject("logDepositPromise: "+err);
+      } else {
+        // Would stop and uninstall the filter but stopWatching() method does not work for me.
+        // If set toBlock: 'pending' or toBlock: 'latest' the logDepositEvent is still being monitored even if eventLogDeposit.stopWatching() is called.
+        // An exception will be thrown after some time.
+        // This is the Chrome console log message:
+        // eventLogDeposit error = Error: Gateway timeout. The request took too long to process. This can happen when querying logs over too wide a block range.
+        // As a workaround i am not using﻿ toBlock: 'pending' or toBlock: 'latest'
+        // but toBlock: blockNumber+1000
+        eventLogDeposit.stopWatching();  // This is not working!
+        resolve(result);
+      }
+    });
+  });
+}
+
+const logWithdrawPromise = function(fromAddress, blockNumber){
+  return new Promise(function(resolve, reject){
+    const contract = createContract();
+    // In DemoContract.sol the LogWithdraw event is created:
+    // event LogWithdraw(address indexed accountAddress, uint amount, uint balance);
+    // The accountAddress is indexed which means web3.js event can 'filter out' this specific address
+    const eventLogWithdraw = contract.LogWithdraw({accountAddress: fromAddress}, {fromBlock: blockNumber, toBlock: blockNumber+1000}, function (err, result) {
+      if(err) {
+        // Would stop and uninstall the filter
+        eventLogWithdraw.stopWatching(); // This is not working!
+        reject("logWithdrawPromise: "+err);
+      } else {
+        // Would stop and uninstall the filter but stopWatching() method does not work for me.
+        // If set toBlock: 'pending' or toBlock: 'latest' the logDepositEvent is still being monitored even if eventLogDeposit.stopWatching() is called.
+        // An exception will be thrown after some time.
+        // This is the Chrome console log message:
+        // eventLogWithdraw error = Error: Gateway timeout. The request took too long to process. This can happen when querying logs over too wide a block range.
+        // As a workaround i am not using﻿ toBlock: 'pending' or toBlock: 'latest'
+        // but toBlock: blockNumber+1000
+        eventLogWithdraw.stopWatching();  // This is not working!
+        resolve(result);
+      }
+    });
+  });
+}
+
+const getTransactionReceiptPromise = function(txhash) {
+  return new Promise(function callback(resolve, reject){
+      document.getElementById('wait').innerText = 'Waiting for the transaction to be mined ...';
+      web3.eth.getTransactionReceipt(txhash, function (err, result) {
+        if (!err && !result) {
+            // If there is no error and result, try again with a 0.5 sec delay
+            setTimeout(function() { callback(resolve, reject) }, 500);
+        } else {
+          if (err){
+            reject(err);
+          } else {
+            document.getElementById('wait').innerText = '';
+            resolve(result);
+          }
+        }
+      });
+  });
+}
+
+// ===================================================
+// Callback
+// ===================================================
+
+// Can not make this a Promise.
+function getFilterWatch(callback) {
+  // can be 'latest' or 'pending'
+  const filter = web3.eth.filter('latest');
+  // watch for changes
+  filter.watch(function(err, result){
+    if (!err) {
+      callback();
+    } else {
+      // When Ethereum node is started, an error will be shown:
+      // filter.watch: Error: filter not found
+      // I do not understand why? I commented out this line.
+      alert("filter.watch: " + err);
+    }
+  });
+}
+
+// Everytime a sync starts, updates and stops.
+function watchSyncing(){
+  web3.eth.isSyncing(function(err, sync){
+    if(!err) {
+      // stop all app activity
+      if(sync === true) {
+       // we use `true`, so it stops all filters, but not the web3.eth.syncing polling
+       web3.reset(true);
+      } else if(sync) {
+        // Show sync info. When your Ethereum node is not runnning for a day, your node need to be synchronized.
+        // A message will be displayed on top of screen.
+        //
+       document.getElementById('intervalErrorMessage').innerText = "Syncing from "+sync.currentBlock+" to "+sync.highestBlock;
+       //console.log("The block number where the sync started = "+sync.startingBlock);
+       //console.log("The block number where at which block the node currently synced to already = "+sync.currentBlock);
+       //console.log("The estimated block number to sync to = "+sync.highestBlock);
+      } else {
+        // re-gain app operation
+        // console.log("startApp");
+        startApp();
+      }
+    }
+  });
+}
+
+// ===================================================
+// Helper functions
+// ===================================================
+function clearOutputs(){
+  document.getElementById('result').innerText = "";
+  document.getElementById('log').innerText= "";
+  document.getElementById('txhash').innerText = "";
+  document.getElementById('wait').innerText= "";
+  document.getElementById('balanceInfo').innerText= "";
+}
+
+function storeData(clickedId){
+  // Check if an Ethereum node is found.
+  if(web3.isConnected()){
+    clearOutputs();
+
+    const contractAddress = document.getElementById('contractAddress').value;
+    const fromAddress = document.getElementById('fromAddress').value;
+    const text = document.getElementById('textStore').value;
+    const value = document.getElementById('valStore').value;
+    const amount = document.getElementById('increaseValStore').value;
+    const depositEther = document.getElementById('valDeposit').value;
+    const withdrawEther = document.getElementById('valWithdraw').value;
+
+    // Check if contractAddress and fromAddress are valid, if so continue.
+    checkAddressPromise(contractAddress, "contract address")
+    .then(function(){
+      return checkAddressPromise(fromAddress, "from account")
+    }).then(function(){
+
+      if(clickedId == "valStoreBtn"){
+        storeVal(fromAddress, value);
+      } else if(clickedId == "increaseValStoreBtn"){
+        increaseStoredVal(fromAddress, amount);
+      } else if(clickedId == "textStoreBtn"){
+        storeText(fromAddress, text);
+      } else if(clickedId == "valDepositBtn"){
+        deposit(fromAddress, depositEther);
+      } else if(clickedId == "valWithdrawBtn"){
+        withdraw(fromAddress, withdrawEther);
+      }
+
+    }).catch(function(message){
+      document.getElementById('result').innerText = "Not a valid "+message+".";
+    });
+
+  } else {
+    document.getElementById('intervalErrorMessage').innerText = "No Ethereum node found";
+  }
+}
+
+function showResult(err, res){
+  if(res) {
+    document.getElementById('result').innerText = res;
+  } else {
+    alert("showResult: "+err);
+  }
+}
+
+function showEventInfo(result, action){
+  let output = "";
+  const amount = result.args.amount;
+  const balance = result.args.balance;
+
+  output += "Amount "+action+" = "+web3.fromWei(amount, 'ether')+" (ether),  New balance = "+web3.fromWei(balance, 'ether')+" (ether) \n\n";
+  output += "Event result: Address from which this log originated = "+result.address+"\n";
+  output += "Event result: Hash of the block where this log was in = "+result.blockHash+"\n";
+  output += "Event result: The block number where this log was in was in = "+result.blockNumber+"\n";
+  output += "Event result: Log index position in the block = "+result.logIndex+"\n";
+  output += "Event result: The event name = "+result.event+"\n";
+  output += "Event result: Is the transaction this event was created from was removed from the blockchain = "+result.removed+"\n";
+  output += "Event result: The transactions index position log was created from = "+result.transactionIndex+"\n";
+  output += "Event result: The hash of the transactions this log was created from = "+result.transactionHash+"\n";
+
+  return output;
+}
+
+// Display the block transactions
+const displayAllTransactionsForBlock = function(blockNumber, numberOfTransactions) {
+  let promises = []; // Create an empty array which will hold getTransactionFromBlockPromise
+  for(let i = 0; i < numberOfTransactions; i++) {
+    const promise = getTransactionFromBlockPromise(blockNumber, i);
+  	promises.push(promise);
+  }
+
+  // Clear transactionOutput for each blockNumber
+  document.getElementById('transactionOutput').innerText = "";
+
+  // Process the promises array
+  Promise.all(promises).then(function(transactionsArr) {
+    transactionsArr.forEach(function(transaction) {
+
+      //console.log("Show all data in transaction: "+JSON.stringify(transaction));
+      let txLog = document.createElement("div");
+
+      let output = "";
+      output += "-----------------------------------------------\n";
+      output += "Transaction index: "+ transaction.transactionIndex+"\n";
+      output += "Transaction hash: "+ transaction.hash+"\n";
+      output += "Transaction from address: "+ transaction.from+"\n";
+      output += "Transaction to address: "+ transaction.to+"\n";
+      output += "Gas: "+ transaction.gas+"\n";
+      output += "GasPrice: "+ transaction.gasPrice+" ("+ web3.fromWei(transaction.gasPrice, 'gwei')+" Gwei/gas unit)\n";
+      output += "Value: "+ transaction.value+" ("+ web3.fromWei(transaction.value, 'ether')+" ether)\n";
+      /*
+      output += "Input: "+ transaction.input+"\n";
+      output += "v: "+ transaction.v+"\n";
+      output += "r: "+ transaction.r+"\n";
+      output += "s: "+ transaction.s+"\n";
+      */
+
+      txLog.innerText = output;
+      document.getElementById('transactionOutput').appendChild(txLog);
+    });
+  }).catch(function(err) {
+    console.log(err);
+  });
+}
+
+// ===================================================
+// Calling DemoContract.sol functions
+// ===================================================
+function getData(clickedId) {
+  // Check if Ethereum node is found
+  if(web3.isConnected()){
+    clearOutputs();
+
+    const contractAddress = document.getElementById('contractAddress').value;
+    const fromAddress = document.getElementById('fromAddress').value;
+
+    // Promise chain
+    checkAddressPromise(contractAddress, "contract address").then(function(){
+      const contract = createContract();
+
+      if(clickedId == "getTextBtn"){
+        contract.getStoredText(function (err, res) {
+          showResult(err, res);
+        });
+      }
+
+      if(clickedId == "getBalanceBtn"){
+        // The balance variable is public. This means a getter is automatically created.
+        // Solidity will generate a function of the following form:
+        //function balances(address arg1) returns (uint b)
+        contract.balances(fromAddress, function (err, res) {
+          if(!err) {
+            res += " (wei), "+web3.fromWei(res, 'ether')+" (ether)";
+          }
+          showResult(err, res);
+        });
+      }
+
+      if(clickedId == "getValueBtn"){
+        contract.getStoredVal(function (err, res) {
+          showResult(err, res);
+        });
+      }
+
+      if(clickedId == "getHelloBtn"){
+        contract.showHello(function (err, res) {
+          showResult(err, res);
+        });
+      }
+
+    }).catch(function(message){
+      document.getElementById('result').innerText = "Not a valid "+message+".";
+    });
+
+  } else {
+    document.getElementById('intervalErrorMessage').innerText = "No Ethereum node found";
+  }
+}
+
+function storeText(fromAddress, text) {
+  setStoredTextPromise(fromAddress, text).then(function(txhash){
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  }).catch(function(err){
+    alert("Error: " +err);
+  });
+}
+
+function storeVal(fromAddress, value) {
+  setStoredValPromise(fromAddress, value).then(function(txhash){
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  }).catch(function(err){
+    alert("Error: " +err);
+  });
+}
+
+function increaseStoredVal(fromAddress, amount) {
+  increaseStoredValPromise(fromAddress, amount).then(function(txhash){
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+      document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  }).catch(function(err){
+    alert("Error: " +err);
+  });
+}
+
+function deposit(fromAddress, amountEther) {
+  depositPromise(fromAddress, amountEther).then(function(txhash){
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+    return getBlockNumberPromise()
+  }).then(function(blockNumber){
+    return logDepositPromise(fromAddress, blockNumber)
+  }).then(function(result){
+    document.getElementById('balanceInfo').innerText = showEventInfo(result, "deposited");
+  }).catch(function(err){
+      alert("Error: " +err);
+  });
+}
+
+function withdraw(fromAddress, amountEther) {
+  withdrawPromise(fromAddress, amountEther).then(function(txhash){
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+    return getBlockNumberPromise()
+  }).then(function(blockNumber){
+    return logWithdrawPromise(fromAddress, blockNumber)
+  }).then(function(result){
+    document.getElementById('balanceInfo').innerText = showEventInfo(result, "withdrawn");
+  }).catch(function(err){
+      alert("Error: " +err);
+  });
+}
+</script>
+
+<style type="text/css">
+* {margin: 0; padding: 0;}
+body {font-size: 62.5%; font-family: garamond, sans-serif; background-color: #fffada;}
+h1 { font-size: 4.0em; }
+p, li { font-size: 1.8em; }
+.clear { clear: both; }
+#header {background: #e3da9d; padding: 15px 0 15px 15px; border-bottom: 1px solid;}
+#content {padding: 0;}
+#left {width: 50%; float: left; padding: 10px 10px 0 10px; margin: 0; border-right: 1px solid; background-color: #fffada;}
+#right {margin-left: 52%; padding: 10px 10px 0 10px; background-color: #fffada;}
+#footer {background: #e3da9d; padding: 15px 0 15px 15px; border-top: 1px solid; border-bottom: 1px solid;}
+#footer2 {background: #e3da9d; padding: 15px 0 15px 15px; background-color: #fffada;}
+#intervalErrorMessage {font-size: 30px; font-weight: bold; color: #ff0000; float: right; padding-right:10px}
+</style>
+
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<div id="header">
+  <div id='intervalErrorMessage'></div>
+  <h1>Demonstration Ethereum Dapp</h1>
+  This demonstration Ethereum Dapp interact with the <a href="https://www.mobilefish.com/download/ethereum/DemoContract.sol.txt">DemoContract.sol</a> contract using the web3.js library (v0.19.0). This web page will not work with web3.js library (v1.0.0).<br />
+  The web3.min.js (v0.19.0) library used by this web page can be downloaded from <a href="https://github.com/ethereum/web3.js/releases/tag/0.19.0">https://github.com/ethereum/web3.js/releases/tag/0.19.0</a>.<br />
+  Use Chrome browser and install the <a href="https://metamask.io">MetaMask plugin </a>(if you do not have a local Ethereum node running).<br />
+  Web3 JavaScript app API: <a href="https://github.com/ethereum/wiki/wiki/JavaScript-API">https://github.com/ethereum/wiki/wiki/JavaScript-API</a><br />
+  Solidity: <a href="https://solidity.readthedocs.io/en/develop/">https://solidity.readthedocs.io/en/develop/</a>
+</div>
+<!-- ================= END OF HEADER ================= -->
+
+<!-- ================= CONTENT ================= -->
+<div id="content">
+
+  <!-- ================= LEFT ================= -->
+  <div id="left">
+    Step 1: You need to deploy the DemoContract.sol contract on a test network (Ropsten, Rinkeby, etc)<br />
+    If you do not know how, watch: <a href="https://youtu.be/nnVX6fQUu4o" onfocus="this.blur()">https://youtu.be/nnVX6fQUu4o</a>
+
+    <br /><br />
+
+    Step 2: Enter the contract address, for example: 0xf1d2e0b8e09f4dda7f3fd6db26496f74079faeeb:<br />
+    <input id='contractAddress' placeholder='contract address' value="0xf1d2e0b8e09f4dda7f3fd6db26496f74079faeeb" size='50'>
+
+    <br /><br />
+
+    Step 3: Enter your account address (use a test account) from which to interact with the contract:<br />
+    <input id='fromAddress' placeholder='from address' size='50'>
+
+    <br /><br />
+
+    Step 4: Enter an integer (uint) and press the store button.<br />
+    This will execute the contract method setStoredVal. The state variable storedVal will contain your entered integer.<br />
+    <input id='valStore' placeholder='value' ><button id="valStoreBtn" onclick="storeData(this.id)">store</button>
+
+    <br /><br />
+
+    Step 5: Enter a value (uint) and press the increase button. The amount will be added to storeVal.<br />
+    This will execute the contract method increaseStoredVal. This method can only be executed by the contract owner.<br />
+    <input id='increaseValStore' placeholder='value' ><button id="increaseValStoreBtn" onclick="storeData(this.id)">increase</button>
+
+    <br /><br />
+
+    Step 6: Enter a text (string) and press the store button.<br />
+    This will execute the contract method setStoredText. The state variable storedText will contain your entered text.<br />
+    <input id='textStore' placeholder='text' ><button id="textStoreBtn" onclick="storeData(this.id)">store</button>
+
+    <br /><br />
+
+    Step 7: Enter an amount in Ethers (for example: 1.45) and press the deposit button.<br />
+    This will execute the contract method deposit. The state variable balances (mapping) will hold the balance per address.<br />
+    <input id='valDeposit' placeholder='value' ><button id="valDepositBtn" onclick="storeData(this.id)">deposit</button>
+
+    <br /><br />
+
+    Step 8: Enter an amount in Ethers (for example: 1.45) and press the withdraw button.<br />
+    This will execute the contract method withdraw. The amount will be subtracted from the balances mapping variable. The state variable balances (mapping) will hold the balance per address.<br />
+    Make sure you have enough balance stored otherwise an exception will be thrown.<br />
+    You can check this by pressing the button "Get balance for account address (step 3)"<br />
+    <input id='valWithdraw' placeholder='value' ><button id="valWithdrawBtn" onclick="storeData(this.id)">withdraw</button>
+
+    <br/><br/>
+
+    Step 6: After you have done step 1-5, you can call the getter methods to retrieve the values.<br />
+    <button id="getTextBtn" onclick="getData(this.id)">Get stored text</button> &nbsp;&nbsp;&nbsp;
+    <button id="getBalanceBtn" onclick="getData(this.id)">Get balance for account address (step 3)</button> &nbsp;&nbsp;&nbsp;
+    <button id="getValueBtn" onclick="getData(this.id)">Get stored value</button> &nbsp;&nbsp;&nbsp;
+    <button id="getHelloBtn" onclick="getData(this.id)">Show hello</button> &nbsp;&nbsp;&nbsp;
+
+    <br/><br/>
+  </div>
+  <!-- ================= END OF LEFT ================= -->
+
+  <!-- ================= RIGHT ================= -->
+  <div id="right">
+    <div id='network'></div>
+    <div id='latestBlockNumber'></div>
+    <div id='latestBlockHash'></div>
+    <div id='latestBlockTimestamp'></div>
+    <div id='numberOfTransactions'></div>
+    <div id='transactionOutput'></div>
+  </div>
+  <!-- ================= END OF RIGHT ================= -->
+
+  <!-- ================= CLEAR ================= -->
+  <div class="clear"></div>
+  <!-- ================= END OF CLEAR ================= -->
+
+</div>
+<!-- ================= END OF CONTENT ================= -->
+
+<!-- ================= FOOTER ================= -->
+<div id="footer">
+  <div id='result'></div>
+</div>
+<!-- ================= END OF FOOTER2 ================= -->
+
+<!-- ================= FOOTER ================= -->
+<div id="footer2">
+  <div id='txhash'></div>
+  <div id='balanceInfo'></div>
+  <div id='wait'></div>
+  <div id='log'></div>
+</div>
+<!-- ================= END OF FOOTER2 ================= -->
+
+</body>
+</html>
