@@ -1,0 +1,34 @@
+{
+  "name": "webclient-certifikate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Superkaki/certifikate-webClient.git"
+  },
+  "author": "inaki.seco@opendeusto.es",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Superkaki/certifikate-webClient/issues"
+  },
+  "homepage": "https://github.com/Superkaki/certifikate-webClient#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "nodemon": "^1.14.9",
+    "utf-8-validate": "^3.0.4",
+    "web3": "^1.0.0-beta.27",
+    "body-parser": "~1.18.2",
+    "cookie-parser": "~1.4.3",
+    "dotenv": "^4.0.0",
+    "errorhandler": "^1.5.0",
+    "express-minify-html": "^0.11.6",
+    "i18n": "^0.8.3",
+    "morgan": "~1.9.0",
+    "mustache": "^2.3.0",
+    "mustache-express": "^1.2.5"
+  }
+}
