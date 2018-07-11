@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+	{{> partials/icon}}
+    <body class="login-page sidebar-collapse">
+        {{> partials/navbar}}
+        <div class="page-header" filter-color="green">
+            <div class="page-header-image" style="background-image:url(../img/login.jpg)"></div>
+            {{> login/main}}
+            {{> partials/footer}}
+        </div>
+    </body>
+    {{> partials/scripts}}
+    <script type="text/javascript" src="/js/listeners/listenerLogin.js"></script>
+</html>

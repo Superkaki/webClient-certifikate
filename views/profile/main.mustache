@@ -1,0 +1,168 @@
+<div class="section">
+    <div class="container">
+        <div class="button-container">
+            <button id="btnTest" class="btn btn-primary btn-round btn-lg" type="button">Test</button>
+            <a href="{{presentation}}" class="btn btn-default btn-round btn-lg btn-icon" rel="tooltip" title="Follow me on Twitter">
+                <i class="fa fa-twitter"></i>
+            </a>
+            <a href="{{presentation}}" class="btn btn-default btn-round btn-lg btn-icon" rel="tooltip" title="Follow me on Instagram">
+                <i class="fa fa-instagram"></i>
+            </a>
+        </div>
+        <h3 class="title">About me</h3>
+        <h5 class="description">User of the certificates blockchain</h5>
+
+        <div class="row">
+            <div class="card">
+                <ul class="nav nav-tabs nav-tabs-neutral justify-content-center" role="tablist" data-background-color="green">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#certificatesHistory" role="tab">Certificates record</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#accessHistory" role="tab">Access logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#certificateManager" role="tab">Manage certificate</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#createCertificate" role="tab">Create certificate</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#checkCertificate" role="tab">Check certificate</a>
+                    </li>
+                </ul>
+                <div class="card-body">
+                    <!-- Tab panes -->
+                    <style type="text/css"> #toolong {word-break: break-all;} </style>
+                    <div class="tab-content text-center">
+                        <div class="tab-pane active" id="certificatesHistory" role="tabpanel">
+                            <table id="tableCert" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Hash</th>
+                                        <th>Issuer Address</th>
+                                        <th>Type</th>
+                                        <th>Title</th>
+                                        <th>Issued</th>
+                                        <th>Expiration</th>
+                                        <th>Valid</th>                                        
+                                    </tr>
+                                    <!--tr>
+                                        <td id="toolong">0xd25a9fcd615b862bccc182a1e5a8522a1064b5d62c6459d4c3c4becee0824783</td>
+                                        <td id="toolong">0xa416ea7ab365c38e5c39b6f06ae779bebe918328</td>
+                                        <td>Tíulo universitario</td>
+                                        <td>Grado en Ingeniería en Tecnologías de Telecomunicación</td>
+                                        <td>20/04/2015</td>
+                                        <td>20/04/2018</td>
+                                        <td>
+                                            <button class="btn btn-success btn-icon btn-round">
+                                                <i class="now-ui-icons ui-1_check"></i>
+                                            </button>
+                                        </td>
+                                    </tr-->
+                                </thead>
+                                <tbody id="logCert"/>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="accessHistory" role="tabpanel">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Certificate Hash</th>
+                                        <th>User Address</th>
+                                    </tr>
+                                    <!--tr>
+                                        <td>16/03/1994</td>
+                                        <td>22:22</td>
+                                        <td>0x5fbb2b7cc6454c16017c0b5b05fa0434c797e56046448bd62b583c1aa11d8915</td>
+                                        <td>0xa416ea7ab365c38e5c39b6f06ae779bebe918328</td>
+                                    </tr-->
+                                </thead>
+                                <tbody id="logHistory"/>
+                            </table>
+                        </div>
+
+                        <div class="tab-pane" id="certificateManager" role="tabpanel">
+                            <p>Add address to white list</p>
+                            <div class="row justify-content-center">
+                                <div class="col-sm-6 col-lg-3">
+                                    <style type="text/css"> #titleOption {background-color:transparent; border: 1px solid #d1cfcf; color:#2c2c2c; border-radius:30px;} </style>
+                                    <select id="titleOption" class="nav-link dropdown-toggle form-control" >
+                                        <option value="">Select a title</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-6 col-lg-5">
+                                    <div class="form-group">
+                                        <input id="address" type="text" onfocus="this.value=''" value="" placeholder="Address" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">
+                                <div class="col-sm-6 col-lg-3">
+                                    <button id="btnAllow" class="btn btn-primary btn-round" type="button">Allow</button>
+                                </div>
+                                <div class="col-sm-6 col-lg-5">    
+                                    <button id="btnAddOwner" class="btn btn-primary btn-round" type="button">Add Owner</button>
+                                </div>
+                            </div>
+                            <div id="formAdd"></div>
+                        </div>
+
+                        <div class="tab-pane" id="createCertificate" role="tabpanel">
+                            </br>
+                            <div id="newCert" class="row justify-content-center">
+                                <div class="col-sm-6 col-lg-5">
+                                    <div class="form-group">
+                                        <input id="owner" type="text" onfocus="this.value=''" value="0xa416ea7ab365c38e5c39b6f06ae779bebe918328" placeholder="Owner Address" class="form-control" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-lg-5">
+                                    <div class="form-group">
+                                        <input id="duration" type="text" value="120" placeholder="Duration (seconds)" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">   
+                                <div class="col-sm-6 col-lg-10">
+                                    <div class="form-group">
+                                        <input id="certType" type="text" onfocus="this.value=''" value="Titulo universitario" placeholder="Type of certificate" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">   
+                                <div class="col-sm-6 col-lg-10">
+                                    <div class="form-group">
+                                        <input id="certName" type="text" onfocus="this.value=''" value="Grado en Ingeniería" placeholder="Title Name" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">
+                                <button id="btnSend" class="btn btn-primary btn-round" type="button">Send</button>    
+                            </div>
+                            <div id="formSend"></div>
+                        </div>
+
+                        <div class="tab-pane" id="checkCertificate" role="tabpanel">
+                            </br>
+                            <div class="row justify-content-center">
+                                <div class="col-sm-6 col-lg-6">
+                                    <div class="form-group">
+                                        <input id="checkCertHash" type="text" onfocus="this.value=''" value="" placeholder="Certificate Hash" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center">
+                                <button id="btnCheck" class="btn btn-primary btn-round" type="button">Check</button>    
+                            </div> 
+                            <div id="certInfo"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{> partials/modal}}
