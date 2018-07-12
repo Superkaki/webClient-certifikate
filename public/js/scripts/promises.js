@@ -87,15 +87,12 @@ const getBlockPromise = function(blockNumber) {
     });
   }
 
-  const setNewCert = function(data){
+  const setCheckCert = function(data){
     return new Promise(function(resolve, reject){
       const contract = createContract();
-      contract.newCert(
-          data.owner,
-          data.certType, 
-          data.certName, 
-          data.duration, 
-          {from: data.sender}, function (err, txHash) {
+      contract.getCertByHash(
+          data.certHash, 
+          {from: data.sender, gas: 2200000 }, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {
@@ -104,6 +101,57 @@ const getBlockPromise = function(blockNumber) {
       });
     });
   }
+
+  const setNewCert = function(data){
+    return new Promise(function(resolve, reject){
+      const contract = createContract();
+      contract.newCert(
+          data.owner,
+          data.certType, 
+          data.certName, 
+          data.duration, 
+          {from: data.sender, gas: 2200000 }, function (err, txHash) {
+        if(txHash) {
+          resolve(txHash);
+        } else {
+          reject("Error setNewCertPromise: " +err);
+        }
+      });
+    });
+  }
+
+  const setNewOwner = function(data){
+    return new Promise(function(resolve, reject){
+      const contract = createContract();
+      contract.addOwner(
+          data.certHash,
+          data.address,
+          {from: data.sender, gas: 2200000 }, function (err, txHash) {
+        if(txHash) {
+          resolve(txHash);
+        } else {
+          reject("Error setNewOwnerPromise: " +err);
+        }
+      });
+    });
+  }
+
+  const setNewEntityToWhiteList = function(data){
+    return new Promise(function(resolve, reject){
+      const contract = createContract();
+      contract.setEntityToWhiteList(
+          data.certHash,
+          data.address,
+          {from: data.sender, gas: 2200000 }, function (err, txHash) {
+        if(txHash) {
+          resolve(txHash);
+        } else {
+          reject("Error setNewOwnerPromise: " +err);
+        }
+      });
+    });
+  }
+
 
 
   const getTransactionReceiptPromise = function(txhash) {

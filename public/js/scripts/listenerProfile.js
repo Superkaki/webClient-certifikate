@@ -174,19 +174,6 @@ function getCertificatesRecord() {
   } else {
     console.log("Web3 is not connected");
   }
-  
-  //let sender = $("#sender");
-  //let data = {
-  //  "sender": sender.text()
-  //}
-  //
-  //let msg = {
-  //  jsonrpc: '2.0',
-  //  id: '0.1',
-  //  method: 'getCertList',
-  //  params: data
-  //};
-  //doSend(msg); 
 }
 
 /********************************************************************************************
@@ -231,14 +218,16 @@ document.getElementById('btnCheck').addEventListener('click', function(evt){
 Parse check certificate to json and send it
 /********************************************************************************************/
 function checkCert(data){
-  let msg = {
-    jsonrpc: '2.0',
-    id: '1',
-    method: 'checkCert',
-    params: data
-  };
-  console.log("Making certificate checking request")
-  doSend(msg);  
+
+  setCheckCert(data).then(function(txhash){
+    showWaitingIcon("#certInfo");
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    console.log("Transaction receipt object: " + JSON.stringify(receipt));
+    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  }).catch(function(err){
+    alert("Error: " +err);
+  }); 
 }
 
 /********************************************************************************************
@@ -251,14 +240,14 @@ document.getElementById('btnSend').addEventListener('click', function(evt){
   let duration = $("#duration")[0].value;
   let certType = $("#certType")[0].value;
   let certName = $("#certName")[0].value;
-  let sender = $("#sender");
+  let sender = $("#sender").text();
   //read form data
   let data = {
     "owner": owner,
     "duration": duration,
     "certType": certType,
     "certName": certName,
-    "sender": sender.text()
+    "sender": sender
   }
   if(data.owner != "" && data.durantion != "" && data.certType != "" && data.certName != "" && data.sender != "") {
     newCert(data);
@@ -292,14 +281,14 @@ document.getElementById('btnAddOwner').addEventListener('click', function(evt){
   let e = document.getElementById("titleOption");
   let manageCertHash = e.options[e.selectedIndex].value;
   let address = $("#address")[0].value;
-  let sender = $("#sender");
+  let sender = $("#sender").text();
   //read form data
   let data = {
     "certHash": manageCertHash,
-    "newOwner": address,
-    "sender": sender.text()
+    "address": address,
+    "sender": sender
   }
-  if(data.certHash != "" && data.newOwner != "") {
+  if(data.certHash != "" && data.address != "") {
     addNewOwner(data);
   } else {
     $('#modalSend').modal('show');
@@ -310,14 +299,16 @@ document.getElementById('btnAddOwner').addEventListener('click', function(evt){
 Parse new owner to json and send it
 /********************************************************************************************/
 function addNewOwner(data){
-  let msg = {
-    jsonrpc: '2.0',
-    id: '3',
-    method: 'addOwner',
-    params: data,
-  };
-  console.log("Making new owner request" )
-  doSend(msg);  
+
+  setNewOwner(data).then(function(txhash){
+    showWaitingIcon("#formAdd");
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    console.log("Transaction receipt object: " + JSON.stringify(receipt));
+    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  }).catch(function(err){
+    alert("Error: " +err);
+  });  
 }
 
 /********************************************************************************************
@@ -347,14 +338,16 @@ document.getElementById('btnAllow').addEventListener('click', function(evt){
 Parse new entity to white list to json and send it
 /********************************************************************************************/
 function addEntityToWhiteList(data){
-  let msg = {
-    jsonrpc: '2.0',
-    id: '4',
-    method: 'setEntityToWhiteList',
-    params: data,
-  };
-  console.log("Making new entity to white list request" )
-  doSend(msg);  
+  
+  setNewEntityToWhiteList(data).then(function(txhash){
+    showWaitingIcon("#formAdd");
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    console.log("Transaction receipt object: " + JSON.stringify(receipt));
+    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  }).catch(function(err){
+    alert("Error: " +err);
+  });   
 }
 
 
