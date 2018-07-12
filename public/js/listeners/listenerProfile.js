@@ -1,20 +1,58 @@
 
-let wsUri = "ws://localhost:8080/";
+//let wsUri = "ws://localhost:8080/";
 let debug = true;
 
 function init() {
-  websocket = new WebSocket(wsUri);
-  websocket.onopen = function(evt) { onOpen(evt) };
-  websocket.onclose = function(evt) { onClose(evt) };
-  websocket.onmessage = function(evt) { onMessage(evt) };
-  websocket.onerror = function(evt) { onError(evt) };
+  console.log("Guay");
+  // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+  if (typeof web3 !== 'undefined') {
+    // Use Mist/MetaMask's provider
+    web3 = new Web3(web3.currentProvider);
+  } else {
+    // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+    web3 = new Web3(new Web3.providers.HttpProvider(require('../../../conf/eth.json').url));
+  }
+  if(!web3.isConnected()){
+    console.log("Web3 chachi!");
+  }
+  
+  monitorAccountChanges();
+  //websocket = new WebSocket(wsUri);
+  //websocket.onopen = function(evt) { onOpen(evt) };
+  //websocket.onclose = function(evt) { onClose(evt) };
+  //websocket.onmessage = function(evt) { onMessage(evt) };
+  //websocket.onerror = function(evt) { onError(evt) };
+}
+
+function monitorAccountChanges() {
+  getCoinbasePromise()
+  .then(function(fromAddress){
+    console.log("Coinbase: " + fromAddress)
+  })
+  .catch(function(err){
+    console.log("Error getting coinbase")
+  });
+}
+
+// ===================================================
+// Promises
+// ===================================================
+const getCoinbasePromise = function(){
+  return new Promise(function(resolve, reject){
+    web3.eth.getCoinbase(function(err, res){
+      if (!res) {
+        reject("No accounts found");
+      } else {
+        resolve(res);
+      }
+    });
+  });
 }
 
 function onOpen(evt) {
 
   writeToLog("Websocket opened!");
   getStatus();
-  //startTimerDemo();
 }
 
 function onClose(evt) {
@@ -51,21 +89,10 @@ function writeToLog(message) {
   console.log(message)
 }
 
-window.addEventListener("load", init, false);
+window.addEventListener("load", init);
 
 
 ///domain specific functions
-
-function startTimerDemo(){
-  //start test timer por ping/pong
-  setInterval(function(){
-    let test = {
-      method: 'ping',
-      action: undefined
-    };
-    doSend(test);
-  }, 3000);
-}
 
 /********************************************************************************************
 Get status from a user

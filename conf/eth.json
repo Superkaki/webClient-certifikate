@@ -1,0 +1,6 @@
+{
+    "url": "http://172.26.252.210:22000",
+    "contract": "0xC676dD57e4fB4c800188C353c79f84BdEcf1B191",
+    "secret": "node",
+    "gasprice": "0"
+}
