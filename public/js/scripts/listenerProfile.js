@@ -177,7 +177,7 @@ function getCertificatesRecord() {
 }
 
 /********************************************************************************************
-Get the record of certificates owned by a user
+Get the record of certificate's access
 /********************************************************************************************/
 function getCheckingHistory() {
 
@@ -214,9 +214,7 @@ document.getElementById('btnCheck').addEventListener('click', function(evt){
   }
 })
 
-/********************************************************************************************
-Parse check certificate to json and send it
-/********************************************************************************************/
+/*Parse check certificate to json and send it*/
 function checkCert(data){
 
   setCheckCert(data).then(function(txhash){
@@ -256,9 +254,7 @@ document.getElementById('btnSend').addEventListener('click', function(evt){
   }
 })
 
-/********************************************************************************************
-Parse new certificate to json and send it
-/********************************************************************************************/
+/*Parse new certificate to json and send it*/
 function newCert(data){
 
   setNewCert(data).then(function(txhash){
@@ -295,9 +291,7 @@ document.getElementById('btnAddOwner').addEventListener('click', function(evt){
   }
 })
 
-/********************************************************************************************
-Parse new owner to json and send it
-/********************************************************************************************/
+/*Parse new owner to json and send it*/
 function addNewOwner(data){
 
   setNewOwner(data).then(function(txhash){
@@ -334,9 +328,7 @@ document.getElementById('btnAllow').addEventListener('click', function(evt){
   }
 })
 
-/********************************************************************************************
-Parse new entity to white list to json and send it
-/********************************************************************************************/
+/*Parse new entity to white list to json and send it*/
 function addEntityToWhiteList(data){
   
   setNewEntityToWhiteList(data).then(function(txhash){
