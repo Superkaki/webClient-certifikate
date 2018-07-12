@@ -16,7 +16,7 @@ function init() {
   
   monitorAccountChanges();
   watchBlockInfo();
-  getCertificatesRecord();
+  getStatus();
   reloadPageWhenNoNetwork();
 }
 
@@ -162,13 +162,14 @@ document.getElementById('btnTest').addEventListener('click', function(evt){
 Get the record of certificates owned by a user
 /********************************************************************************************/
 function getCertificatesRecord() {
+
   if(web3.isConnected()){
     let sender = $("#sender").text();
     //console.log("sender: " + sender);
 
     const contract = createContract();
     contract.getCertList(sender, {from: sender} ,function (err, res) {
-      showResult(err, res);
+      showResult(err, res, "Certificates");
     });
   } else {
     console.log("Web3 is not connected");
@@ -192,17 +193,31 @@ function getCertificatesRecord() {
 Get the record of certificates owned by a user
 /********************************************************************************************/
 function getCheckingHistory() {
-  let sender = $("#sender");
-  let data = {
-    "sender": sender.text()
+
+  if(web3.isConnected()){
+    let sender = $("#sender").text();
+    //console.log("sender: " + sender);
+
+    const contract = createContract();
+    contract.getAccessLogList(sender, {from: sender} ,function (err, res) {
+      showResult(err, res, "Access logs");
+    });
+  } else {
+    console.log("Web3 is not connected");
   }
-  let msg = {
-    jsonrpc: '2.0',
-    id: '0.2',
-    method: 'getAccessLogList',
-    params: data
-  };
-  doSend(msg); 
+
+
+  //let sender = $("#sender");
+  //let data = {
+  //  "sender": sender.text()
+  //}
+  //let msg = {
+  //  jsonrpc: '2.0',
+  //  id: '0.2',
+  //  method: 'getAccessLogList',
+  //  params: data
+  //};
+  //doSend(msg); 
 }
 
 /********************************************************************************************
@@ -718,9 +733,10 @@ function showWaitingIcon(json, place) {
   creating.innerHTML = iconSended;
 }
 
-function showResult(err, res){
+function showResult(err, res, data){
   if(res) {
-    console.log(res);
+    console.log(data + ":");
+    console.log(res)
   } else {
     alert("showResult: "+err);
   }

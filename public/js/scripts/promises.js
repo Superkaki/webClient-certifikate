@@ -117,7 +117,7 @@ const getBlockPromise = function(blockNumber) {
             if (err){
               reject(err);
             } else {
-              console.log("Done!");
+              console.log("Transaction done!");
               resolve(result);
             }
           }
