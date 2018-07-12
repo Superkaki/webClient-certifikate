@@ -1,5 +1,6 @@
 
 //let wsUri = "ws://localhost:8080/";
+
 let debug = true;
 
 function init() {
@@ -17,63 +18,32 @@ function init() {
   }
   
   monitorAccountChanges();
-  //websocket = new WebSocket(wsUri);
-  //websocket.onopen = function(evt) { onOpen(evt) };
-  //websocket.onclose = function(evt) { onClose(evt) };
-  //websocket.onmessage = function(evt) { onMessage(evt) };
-  //websocket.onerror = function(evt) { onError(evt) };
 }
 
 function monitorAccountChanges() {
-  getCoinbasePromise()
-  .then(function(fromAddress){
-    console.log("Coinbase: " + fromAddress)
-  })
-  .catch(function(err){
-    console.log("Error getting coinbase")
-  });
-}
-
-// ===================================================
-// Promises
-// ===================================================
-const getCoinbasePromise = function(){
-  return new Promise(function(resolve, reject){
-    web3.eth.getCoinbase(function(err, res){
-      if (!res) {
-        reject("No accounts found");
-      } else {
-        resolve(res);
-      }
+  if(web3.isConnected()){
+    getCoinbasePromise()
+    .then(function(fromAddress){
+      console.log("Coinbase: " + fromAddress)
+    })
+    .catch(function(err){
+      console.log("Error getting coinbase")
     });
-  });
-}
 
-function onOpen(evt) {
+    accountInterval = setInterval(function() {
+      // Check which Ethereum network is used
+      getNetworkPromise()
+      .then(function(network){
+        console.log("Used network: " + network);
+      })
+      .catch(function(err){
+        console.log(err);
+      });
 
-  writeToLog("Websocket opened!");
-  getStatus();
-}
-
-function onClose(evt) {
-  writeToLog("DISCONNECTED");
-}
-
-function onMessage(evt) {
-  if(evt && evt.data){
-    let jsonData = JSON.parse(evt.data);
-    if(jsonData){
-      processMessageProtocol(jsonData);
-    }
-    else{
-      console.log(jsonData.id + jsonData.result + jsonData.jsonrpc);
-    }
+    }, 1000); // end of accountInterval = setInterval(function()
+  } else {
+    console.log("Web3 is not connected");
   }
-  //websocket.close();
-}
-
-function onError(evt) {
-  writeToLog(evt.data);
 }
 
 /********************************************************************************************
