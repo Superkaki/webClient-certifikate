@@ -151,4 +151,8 @@ function loadErrorHandler() {
   }
 }
 
+let port = require('./conf/conf.json').port;
+app.listen(port);
+console.log("Magic happens at localhost:" + port);
+
 module.exports = app;
