@@ -28,7 +28,7 @@ const getNetworkPromise = function() {
           } else {
             switch (res) {
               case "1":
-                selectedNetwork = "Quorum de Eneko";
+                selectedNetwork = "Quorum de Eneko o Mainnet";
                 break
               case "2":
                 selectedNetwork = "Morden";
