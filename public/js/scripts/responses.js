@@ -16,19 +16,19 @@ function processMessageProtocol(json){
                 processAccessLogRecord(json.result);
                 break; 
             case "1.0":
-                showWaitingIcon(json,"#certInfo");
+                showWaitingIcon("#certInfo");
                 break;
             case "1.1":
                 processCheckCertResponse(json);
                 break;
             case "2.0":
-                showWaitingIcon(json,"#formSend");
+                showWaitingIcon("#formSend");
                 break;
             case "2.1":
                 processNewCertCreatedResponse(json);
                 break;
             case "3.0":
-                showWaitingIcon(json,"#formAdd");
+                showWaitingIcon("#formAdd");
                 break;
             case "3.1":
                 processEntityToWhiteListResponse(json);
@@ -306,20 +306,10 @@ function addOptionToManager(certHash,certName) {
 /********************************************************************************************
 Show waiting icon
 /********************************************************************************************/
-function showWaitingIcon(json, place) {
-  if(json.result) {
-    console.log("Waiting block");
-    if(json.result.success) {
-      iconSended = "</br><i class='now-ui-icons loader_refresh spin'></i>";
-    }
-  } else {
-    let data = json.error;
-    console.log("Error: " + data.message);
-    iconSended = "<button class='btn btn-danger btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_simple-remove'></i> "+data.message+"\
-                  </button>";
-  }
-  iconSended = iconSended.replace("", "");
-  let creating = $(place)[0];
-  creating.innerHTML = iconSended;
+const showWaitingIcon = function(place) {
+    let iconSended = "</br><i class='now-ui-icons loader_refresh spin'></i>";
+
+    iconSended = iconSended.replace("", "");
+    let creating = $(place)[0];
+    creating.innerHTML = iconSended;
 }

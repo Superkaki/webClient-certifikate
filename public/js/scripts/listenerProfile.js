@@ -205,19 +205,6 @@ function getCheckingHistory() {
   } else {
     console.log("Web3 is not connected");
   }
-
-
-  //let sender = $("#sender");
-  //let data = {
-  //  "sender": sender.text()
-  //}
-  //let msg = {
-  //  jsonrpc: '2.0',
-  //  id: '0.2',
-  //  method: 'getAccessLogList',
-  //  params: data
-  //};
-  //doSend(msg); 
 }
 
 /********************************************************************************************
@@ -286,6 +273,7 @@ Parse new certificate to json and send it
 function newCert(data){
 
   setNewCert(data).then(function(txhash){
+    showWaitingIcon("#formSend");
     return getTransactionReceiptPromise(txhash)
   }).then(function(receipt){
     console.log("Transaction receipt object: " + JSON.stringify(receipt));
@@ -293,15 +281,6 @@ function newCert(data){
   }).catch(function(err){
     alert("Error: " +err);
   });
-
-  //let msg = {
-  //  jsonrpc: '2.0',
-  //  id: '2',
-  //  method: 'newCert',
-  //  params: data
-  //};
-  //console.log("Making new certificate request")
-  //doSend(msg);  
 }
 
 /********************************************************************************************
