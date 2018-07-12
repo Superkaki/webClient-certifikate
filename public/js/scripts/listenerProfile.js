@@ -4,7 +4,7 @@
 let debug = true;
 
 function init() {
-  console.log("Guay");
+  console.log("Todo guay!");
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
   if (typeof web3 !== 'undefined') {
     // Use Mist/MetaMask's provider
@@ -13,12 +13,10 @@ function init() {
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
     web3 = new Web3(new Web3.providers.HttpProvider(require('../../../conf/eth.json').url));
   }
-  if(!web3.isConnected()){
-    console.log("Web3 chachi!");
-  }
   
   monitorAccountChanges();
   watchBlockInfo();
+  getCertificatesRecord();
   reloadPageWhenNoNetwork();
 }
 
@@ -77,6 +75,20 @@ function watchBlockInfo(){
   } else {
     console.log("Web3 is not connected");
   }
+}
+
+function createContract(){
+  // Each time you modify the DemoContract.sol and deploy it on the blockchain, you need to get the abi value.
+  // Paste the abi value in web3.eth.contract(PASTE_ABI_VALUE);
+  // When the contract is deployed, do not forget to change the contract address, see
+  // formfield id 'contractAddress'
+  // Replace contract address: 0xf1d2e0b8e09f4dda7f3fd6db26496f74079faeeb with your own.
+  
+  const abi = [{"constant":false,"inputs":[{"name":"_certUnique","type":"bytes32"}],"name":"removeCertificate","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"add","type":"address"}],"name":"getLastCert","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getCreator","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"accessLogs","outputs":[{"name":"date","type":"uint256"},{"name":"user","type":"address"},{"name":"certificate","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_certUnique","type":"bytes32"},{"name":"_newOwner","type":"address"}],"name":"addOwner","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"certUnique","type":"bytes32"}],"name":"isSenderInTheWhiteList","outputs":[{"name":"isAllowed","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"certUnique","type":"bytes32"}],"name":"getCertByHash","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"address"},{"name":"","type":"string"},{"name":"","type":"string"},{"name":"","type":"uint256"},{"name":"","type":"uint256"},{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_certUnique","type":"bytes32"}],"name":"insertHistory","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"certs","outputs":[{"name":"issuer","type":"address"},{"name":"certName","type":"string"},{"name":"certType","type":"string"},{"name":"creationDate","type":"uint256"},{"name":"expirationDate","type":"uint256"},{"name":"isStilValid","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"kill","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_add","type":"address"},{"name":"_userName","type":"bytes32"},{"name":"_userNid","type":"bytes9"}],"name":"setUser","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"nounce","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"add","type":"address"}],"name":"getUserByAddress","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_certUnique","type":"bytes32"},{"name":"_newEntity","type":"address"}],"name":"setEntityToWhiteList","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"add","type":"address"}],"name":"getAccessLogList","outputs":[{"name":"accessLogList","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"ConstructorCertifikate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getMyAddress","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"users","outputs":[{"name":"name","type":"bytes32"},{"name":"nid","type":"bytes9"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"certUnique","type":"bytes32"}],"name":"checkCert","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"accessLogUnique","type":"bytes32"}],"name":"getAccessLogByHash","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"},{"name":"","type":"address"},{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_certUnique","type":"bytes32"}],"name":"checkExpiration","outputs":[{"name":"isValid","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"add","type":"address"}],"name":"getCertList","outputs":[{"name":"ownCertsList","type":"bytes32[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_certType","type":"string"},{"name":"_certName","type":"string"},{"name":"_duration","type":"uint256"}],"name":"newCert","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}];
+  const contractAddress = '0xC676dD57e4fB4c800188C353c79f84BdEcf1B191';
+
+  const contractSpec = web3.eth.contract(abi);
+  return contractSpec.at(contractAddress);
 }
 
 /********************************************************************************************
@@ -150,17 +162,30 @@ document.getElementById('btnTest').addEventListener('click', function(evt){
 Get the record of certificates owned by a user
 /********************************************************************************************/
 function getCertificatesRecord() {
-  let sender = $("#sender");
-  let data = {
-    "sender": sender.text()
+  if(web3.isConnected()){
+    let sender = $("#sender").text();
+    //console.log("sender: " + sender);
+
+    const contract = createContract();
+    contract.getCertList(sender, {from: sender} ,function (err, res) {
+      showResult(err, res);
+    });
+  } else {
+    console.log("Web3 is not connected");
   }
-  let msg = {
-    jsonrpc: '2.0',
-    id: '0.1',
-    method: 'getCertList',
-    params: data
-  };
-  doSend(msg); 
+  
+  //let sender = $("#sender");
+  //let data = {
+  //  "sender": sender.text()
+  //}
+  //
+  //let msg = {
+  //  jsonrpc: '2.0',
+  //  id: '0.1',
+  //  method: 'getCertList',
+  //  params: data
+  //};
+  //doSend(msg); 
 }
 
 /********************************************************************************************
@@ -244,14 +269,24 @@ document.getElementById('btnSend').addEventListener('click', function(evt){
 Parse new certificate to json and send it
 /********************************************************************************************/
 function newCert(data){
-  let msg = {
-    jsonrpc: '2.0',
-    id: '2',
-    method: 'newCert',
-    params: data
-  };
-  console.log("Making new certificate request")
-  doSend(msg);  
+
+  setNewCert(data).then(function(txhash){
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    console.log("Transaction receipt object: " + JSON.stringify(receipt));
+    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  }).catch(function(err){
+    alert("Error: " +err);
+  });
+
+  //let msg = {
+  //  jsonrpc: '2.0',
+  //  id: '2',
+  //  method: 'newCert',
+  //  params: data
+  //};
+  //console.log("Making new certificate request")
+  //doSend(msg);  
 }
 
 /********************************************************************************************
@@ -681,4 +716,12 @@ function showWaitingIcon(json, place) {
   iconSended = iconSended.replace("", "");
   let creating = $(place)[0];
   creating.innerHTML = iconSended;
+}
+
+function showResult(err, res){
+  if(res) {
+    console.log(res);
+  } else {
+    alert("showResult: "+err);
+  }
 }

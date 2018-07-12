@@ -86,3 +86,41 @@ const getBlockPromise = function(blockNumber) {
       });
     });
   }
+
+  const setNewCert = function(data){
+    return new Promise(function(resolve, reject){
+      const contract = createContract();
+      contract.newCert(
+          data.owner,
+          data.certType, 
+          data.certName, 
+          data.duration, 
+          {from: data.sender}, function (err, txHash) {
+        if(txHash) {
+          resolve(txHash);
+        } else {
+          reject("Error setNewCertPromise: " +err);
+        }
+      });
+    });
+  }
+
+
+  const getTransactionReceiptPromise = function(txhash) {
+    console.log("Waiting for the transaction to be mined ...");
+    return new Promise(function callback(resolve, reject){
+        web3.eth.getTransactionReceipt(txhash, function (err, result) {
+          if (!err && !result) {
+              // If there is no error and result, try again with a 0.5 sec delay
+              setTimeout(function() { callback(resolve, reject) }, 500);
+          } else {
+            if (err){
+              reject(err);
+            } else {
+              console.log("Done!");
+              resolve(result);
+            }
+          }
+        });
+    });
+  }
