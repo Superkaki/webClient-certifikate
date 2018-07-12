@@ -92,25 +92,6 @@ function createContract(){
 }
 
 /********************************************************************************************
-Parse message yo json and send it
-/********************************************************************************************/
-function doSend(message) {
-  let serializedData = JSON.stringify(message);
-  writeToLog("----> REQUEST SENDED: " + serializedData);
-  websocket.send(serializedData);
-}
-
-function writeToLog(message) {
-  console.log(message)
-}
-
-window.addEventListener("load", init);
-
-
-
-///domain specific functions
-
-/********************************************************************************************
 Get status from a user
 /********************************************************************************************/
 function getStatus() {
