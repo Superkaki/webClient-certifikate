@@ -50,3 +50,39 @@ const getNetworkPromise = function() {
       });
     });
   }
+
+const getBlockPromise = function(blockNumber) {
+    return new Promise(function(resolve, reject){
+      web3.eth.getBlock(blockNumber, function(err, confirmedBlock){
+        if(!err) {
+          resolve([blockNumber, confirmedBlock]);
+        } else {
+          reject("getBlockPromise: "+err);
+        }
+      });
+    });
+  }
+  
+  const getBlockNumberPromise = function() {
+    return new Promise(function(resolve, reject){
+      web3.eth.getBlockNumber(function(err, blockNumber){
+        if(blockNumber) {
+          resolve(blockNumber);
+        } else {
+          reject("getBlockNumberPromise: "+err);
+        }
+      });
+    });
+  }
+
+  const getBlockTransactionCountPromise = function(blockNumber) {
+    return new Promise(function(resolve, reject){
+      web3.eth.getBlockTransactionCount(blockNumber, function(err, numberOfTransactions){
+        if(!err) {
+          resolve([blockNumber, numberOfTransactions]);
+        } else {
+          reject("getBlockTransactionCountPromise: "+err);
+        }
+      });
+    });
+  }

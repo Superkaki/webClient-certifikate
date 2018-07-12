@@ -18,9 +18,23 @@ function init() {
   }
   
   monitorAccountChanges();
+  watchBlockInfo();
+  reloadPageWhenNoNetwork();
+}
+
+// Check if an Ethereum node is available every 5 seconds.
+// I have chosen arbritray 5 seconds.
+function reloadPageWhenNoNetwork(){
+  setInterval(function(){
+    if(!web3.isConnected()){
+      // If an Ethereum node is found, reload web page.
+      init();
+    }
+  }, 5000);
 }
 
 function monitorAccountChanges() {
+  // Check if an Ethereum node is found.
   if(web3.isConnected()){
     getCoinbasePromise()
     .then(function(fromAddress){
@@ -46,6 +60,25 @@ function monitorAccountChanges() {
   }
 }
 
+function watchBlockInfo(){
+  if(web3.isConnected()){
+    // Promise chain
+    getBlockNumberPromise().then(function(blockNumber){
+      return getBlockPromise(blockNumber);
+    }).then(function(arr){
+      const blockNumber = arr[0];
+      const confirmedBlock = arr[1];
+      console.log("Latest block number: " + blockNumber);
+      console.log("Latest block hash: " + confirmedBlock.hash);
+      console.log("Latest block timestamp: " + confirmedBlock.timestamp);
+    }).catch(function(err){
+      alert("Error: " +err);
+    });
+  } else {
+    console.log("Web3 is not connected");
+  }
+}
+
 /********************************************************************************************
 Parse message yo json and send it
 /********************************************************************************************/
@@ -60,6 +93,7 @@ function writeToLog(message) {
 }
 
 window.addEventListener("load", init);
+
 
 
 ///domain specific functions
