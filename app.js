@@ -87,22 +87,16 @@ function loadMultilanguage() {
   i18n.configure({
     // setup some locales - other locales default to en silently
     locales:['en', 'es'],
-
     // you may alter a site wide default locale
     defaultLocale: 'es',
-
     // sets a custom cookie name to parse locale settings from  - defaults to NULL
     cookie: 'lang',
-
     // where to store json files - defaults to './locales' relative to modules directory
     directory: './locales',
-
     // whether to write new locale information to disk - defaults to true
     updateFiles: false,
-
     // what to use as the indentation unit - defaults to "\t"
     indent: "\t",
-
     // setting extension of json files - defaults to '.json' (you might want to set this to '.js' according to webtranslateit)
     extension: '.json',
   });
