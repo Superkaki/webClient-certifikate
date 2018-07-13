@@ -3,6 +3,7 @@
 /********************************************************************************************/
 
 //message protocol handler
+// TODO: use them!
 function processMessageProtocol(json){
     if(debug){
         console.log("<---- RESPONSE RECEIVED: " + JSON.stringify(json))

@@ -145,6 +145,45 @@ function getCheckingHistory() {
 }
 
 /********************************************************************************************
+Get last certificate created
+/********************************************************************************************/
+function getLastCert(owner) {
+
+  if(web3.isConnected()){
+    const contract = createContract();
+    contract.getLastCert(owner, {from: owner} ,function (err, res) {
+      showResult(err, res, "GetLastCert created of " + owner);
+      getCertByHash(certHash, owner);
+    });
+  } else {
+    console.log("Web3 is not connected");
+  }
+}
+
+/********************************************************************************************
+Get last certificate created
+/********************************************************************************************/
+function getCertByHash(certHash, owner) {
+
+  if(web3.isConnected()){
+    const contract = createContract();
+    contract.getCertByHash(certHash, {from: owner} ,function (err, res) {
+      showResult(err, res, "getCertByHash");
+      return res;
+    });
+  } else {
+    console.log("Web3 is not connected");
+  }
+}
+
+
+
+
+/********************************************************************************************/
+/***********************************   Button Listeners   ***********************************/
+/********************************************************************************************/
+
+/********************************************************************************************
 Listener for check certificate button
 /********************************************************************************************/
 document.getElementById('btnCheck').addEventListener('click', function(evt){
@@ -212,7 +251,7 @@ function newCert(data){
     return getTransactionReceiptPromise(txhash)
   }).then(function(receipt){
     console.log("Transaction receipt object: " + JSON.stringify(receipt));
-    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+    getLastCert(data.sender);
   }).catch(function(err){
     alert("Error: " +err);
   });
@@ -302,7 +341,7 @@ function showResult(err, res, data){
     console.log(data + ":");
     console.log(res)
   } else {
-    alert("showResult: "+err);
+    alert(data + " error: "+err);
   }
 }
 
