@@ -26,7 +26,7 @@ function processMessageProtocol(json){
                 showWaitingIcon("#formSend");
                 break;
             case "2.1":
-                processNewCertCreatedResponse(json);
+                processNewCertCreatedResponse();
                 break;
             case "3.0":
                 showWaitingIcon("#formAdd");
@@ -118,32 +118,24 @@ function processCheckCertResponse(json) {
 Show success icon
 Insert a new certificate creation into the record
 /********************************************************************************************/
-function processNewCertCreatedResponse(json) {
-  if(json.result) {
-    let data = json.result;
-    console.log("New cert added");
+function processNewCertCreatedResponse() {
+  console.log("New cert added");
 
-    if(data.certHash) {
-      iconSended = "<button class='btn btn-success btn-round' type='button'>\
-                        <i class='now-ui-icons ui-1_check'></i> Created!\
-                    </button>";
-    } else {
-      iconSended = "<button class='btn btn-danger btn-round' type='button'>\
-                        <i class='now-ui-icons ui-1_simple-remove'></i> Error creating certificate!\
-                    </button>";
-    }
+  iconSended = "<button class='btn btn-success btn-round' type='button'>\
+                  <i class='now-ui-icons ui-1_check'></i> Created!\
+               </button>";
 
-    if(data){
-      addNewCertRow(data);
-      addOptionToManager(data.certHash, data.certName);
-    }
-  } else {
-    let data = json.error;
-    console.log("Error: " + data.message);
-    iconSended = "<button class='btn btn-danger btn-round' type='button'>\
+  iconSended = iconSended.replace("", "");
+  let creating = $("#formSend")[0];
+  creating.innerHTML = iconSended;
+}
+
+function processNewCertErrorResponse() {
+  let data = json.error;
+  console.log("Error: " + data.message);
+  iconSended = "<button class='btn btn-danger btn-round' type='button'>\
                       <i class='now-ui-icons ui-1_simple-remove'></i> "+data.message+"\
                   </button>";
-  }
 
   iconSended = iconSended.replace("", "");
   let creating = $("#formSend")[0];

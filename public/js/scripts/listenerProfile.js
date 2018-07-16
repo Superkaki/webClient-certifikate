@@ -152,8 +152,15 @@ function getLastCert(owner) {
   if(web3.isConnected()){
     const contract = createContract();
     contract.getLastCert(owner, {from: owner} ,function (err, res) {
-      showResult(err, res, "GetLastCert created of " + owner);
-      getCertByHash(certHash, owner);
+      processNewCertCreatedResponse();
+      if(res != "0x") {
+        showResult(err, res, "GetLastCert created of " + owner);
+        getCertByHash(certHash, owner);
+        //addNewCertRow(data);
+        //addOptionToManager(data.certHash, data.certName);
+      } else {
+        console.log("Error getting certHash: " + res)
+      }
     });
   } else {
     console.log("Web3 is not connected");
