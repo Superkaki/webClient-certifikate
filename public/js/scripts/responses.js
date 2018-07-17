@@ -131,10 +131,10 @@ function processNewCertCreatedResponse() {
   creating.innerHTML = iconSended;
 }
 
-function processNewCertErrorResponse() {
-  console.log("Error: " + data.message);
+function processNewCertErrorResponse(err) {
+
   iconSended = "<button class='btn btn-danger btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_simple-remove'></i> "+data.message+"\
+                      <i class='now-ui-icons ui-1_simple-remove'></i> "+err+"\
                   </button>";
 
   iconSended = iconSended.replace("", "");
@@ -145,19 +145,25 @@ function processNewCertErrorResponse() {
 /********************************************************************************************
 Show success icon
 /********************************************************************************************/
-function processNewOwnerResponse(json) {
-  if(json.result) {
-    console.log("New owner added");
-    iconAdded = "<button class='btn btn-success btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_check'></i> Added!\
-                </button>";
-  } else {
-    let data = json.error;
-    console.log("Error: " + data.message);
-    iconAdded = "<button class='btn btn-danger btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_simple-remove'></i> "+data.message+"\
-                </button>";
-  }
+function processNewOwnerResponse() {
+
+  console.log("New owner added");
+  iconAdded = "<button class='btn btn-success btn-round' type='button'>\
+                    <i class='now-ui-icons ui-1_check'></i> Added!\
+              </button>";
+
+  iconAdded = iconAdded.replace("", "");
+  let creating = $("#formAdd")[0];
+  creating.innerHTML = iconAdded;
+}
+
+function processNewOwnerErrorResponse(err) {
+
+  console.log("Error: " + err);
+  iconAdded = "<button class='btn btn-danger btn-round' type='button'>\
+                    <i class='now-ui-icons ui-1_simple-remove'></i> "+err+"\
+              </button>";
+
   iconAdded = iconAdded.replace("", "");
   let creating = $("#formAdd")[0];
   creating.innerHTML = iconAdded;

@@ -131,9 +131,7 @@ function getCertificatesRecord() {
       showResult(err, res, "Certificates");
       
       for(i = 0; i < res.length ; i++) {
-        contract.getCertByHash(res[i], {from: sender}, function(err, data) {
-          processCertificatesRecord(data);
-        });
+        getCertByHash(res[i],sender);
       }
 
     });
@@ -195,7 +193,8 @@ function getCertByHash(certHash, sender) {
   if(web3.isConnected()){
     const contract = createContract();
     contract.getCertByHash(certHash, {from: sender} ,function (err, res) {
-      showResult(err, res, "getCertByHash");
+      //showResult(err, res, "getCertByHash");
+      processCertificatesRecord(res);
       return res;
     });
   } else {
@@ -290,8 +289,9 @@ function newCert(data){
     console.log("Transaction receipt object: " + JSON.stringify(receipt));
     processNewCertCreatedResponse();
     getLastCert();
+
   }).catch(function(err){
-    alert("Error: " +err);
+    processNewCertErrorResponse(err);
   });
 }
 
@@ -326,9 +326,9 @@ function addNewOwner(data){
     return getTransactionReceiptPromise(txhash)
   }).then(function(receipt){
     console.log("Transaction receipt object: " + JSON.stringify(receipt));
-    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+    processNewOwnerResponse();
   }).catch(function(err){
-    alert("Error: " +err);
+    processNewOwnerErrorResponse(err);
   });  
 }
 
