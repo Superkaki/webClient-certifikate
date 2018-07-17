@@ -57,7 +57,7 @@ Show all the certificates from a user
 function processCertificatesRecord(data) {
   if(data){
     addNewCertRow(data);
-    addOptionToManager(data.certHash,data.certName);
+    addOptionToManager(data[0],data[3]);
   }
 }
 
@@ -231,7 +231,7 @@ Add new certificate to the certificates record
 function addNewCertRow(data) {
   //XSS vulnerable
   let rowdata = undefined;
-  if(data.isStilValid) {
+  if(data[6]) {
     iconValid = "<button class='btn btn-success btn-icon btn-round'>\
                     <i class='now-ui-icons ui-1_check'></i>\
                 </button>";
@@ -244,25 +244,24 @@ function addNewCertRow(data) {
   }
 
   let expDate;
-  if(data.creationDate != data.expirationDate) {
-    expDate = epochToDateTime(data.expirationDate);
+  if(data[4].c[0] != data[5].c[0]) {
+    expDate = epochToDateTime(data[5]);
   } else {
     expDate = "-";
   }
 
   rowdata = "<tr>\
-  <td id='toolong'>"+data.certHash+"</td>\
-  <td id='toolong'>"+data.issuer+"</td>\
-  <td>"+data.certType+"</td>\
-  <td>"+data.certName+"</td>\
-  <td>"+epochToDateTime(data.creationDate)+"</td>\
+  <td id='toolong'>"+data[0]+"</td>\
+  <td id='toolong'>"+data[1]+"</td>\
+  <td>"+data[2]+"</td>\
+  <td>"+data[3]+"</td>\
+  <td>"+epochToDateTime(data[4])+"</td>\
   <td>"+expDate+"</td>\
   <td>"+iconValid+"</td>\
   </tr>";
 
   rowdata = rowdata.replace("", "");
   let table = $("#logCert")[0];
-  console.log(table);
   table.innerHTML = rowdata + table.innerHTML;
 }
 
@@ -292,7 +291,6 @@ function addOptionToManager(certHash,certName) {
 
   option = option.replace("", "");
   let opt = $("#titleOption")[0];
-  console.log(opt);
   opt.innerHTML = opt.innerHTML + option;
 }
 

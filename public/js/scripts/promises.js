@@ -15,6 +15,18 @@ const getCoinbasePromise = function(){
     });
 }
 
+const getBalancePromise = function(fromAddress){
+  return new Promise(function(resolve, reject){
+    web3.eth.getBalance(fromAddress, function(err, res){
+      if (!res) {
+        reject("No balance found");
+      } else {
+        resolve(res);
+      }
+    });
+  });
+}
+
 const getNetworkPromise = function() {
     return new Promise(function(resolve, reject){
       // Check which Ethereum network is used

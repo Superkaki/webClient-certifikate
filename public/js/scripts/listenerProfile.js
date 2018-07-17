@@ -3,7 +3,6 @@
 window.addEventListener("load", init);
 
 function init() {
-  console.log("Todo guay!");
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
   if (typeof web3 !== 'undefined') {
     // Use Mist/MetaMask's provider
@@ -13,6 +12,8 @@ function init() {
     web3 = new Web3(new Web3.providers.HttpProvider(require('../../../conf/eth.json').url));
   }
   
+  console.log("Todo guay!");
+
   monitorAccountChanges();
   watchBlockInfo();
   getStatus();
@@ -45,6 +46,15 @@ function monitorAccountChanges() {
     getCoinbasePromise()
     .then(function(fromAddress){
       console.log("Coinbase: " + fromAddress)
+
+      getBalancePromise(fromAddress)
+      .then(function(balance){
+        console.log("Balance: " + balance + " weis")
+      })
+      .catch(function(err){
+        console.log("Error getting balance")
+      });
+
     })
     .catch(function(err){
       console.log("Error getting coinbase")
@@ -95,7 +105,6 @@ function getStatus() {
   console.log("Loading user data");
   getCertificatesRecord();
   getCheckingHistory();
-  getLastCert();
 }
 
 /********************************************************************************************
@@ -118,8 +127,15 @@ function getCertificatesRecord() {
     let sender = $("#sender").text();
 
     const contract = createContract();
-    contract.getCertList({from: sender} ,function (err, res) {
+    contract.getCertList({from: sender}, function (err, res) {
       showResult(err, res, "Certificates");
+      
+      for(i = 0; i < res.length ; i++) {
+        contract.getCertByHash(res[i], {from: sender}, function(err, data) {
+          processCertificatesRecord(data);
+        });
+      }
+
     });
   } else {
     console.log("Web3 is not connected");
@@ -135,7 +151,7 @@ function getCheckingHistory() {
     let sender = $("#sender").text();
 
     const contract = createContract();
-    contract.getAccessLogList(sender, {from: sender} ,function (err, res) {
+    contract.getAccessLogList({from: sender} ,function (err, res) {
       showResult(err, res, "Access logs");
     });
   } else {
@@ -154,7 +170,7 @@ function getLastCert() {
     const contract = createContract();
     contract.getLastCert({from: sender} ,function (err, res) {
       if(res != "0x") {
-        showResult(err, res, "GetLastCert created of " + sender);
+        showResult(err, res, "GetLastCert of " + sender + ":");
         getCertByHash(res, sender);
         //addNewCertRow(data);
         //addOptionToManager(data.certHash, data.certName);
