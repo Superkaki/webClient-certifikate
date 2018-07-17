@@ -4,15 +4,15 @@
 // ===================================================
 
 const getCoinbasePromise = function(){
-    return new Promise(function(resolve, reject){
-      web3.eth.getCoinbase(function(err, res){
-        if (!res) {
-          reject("No accounts found");
-        } else {
-          resolve(res);
-        }
-      });
+  return new Promise(function(resolve, reject){
+    web3.eth.getCoinbase(function(err, res){
+      if (!res) {
+        reject("No accounts found");
+      } else {
+        resolve(res);
+      }
     });
+  });
 }
 
 const getBalancePromise = function(fromAddress){
@@ -28,87 +28,134 @@ const getBalancePromise = function(fromAddress){
 }
 
 const getNetworkPromise = function() {
-    return new Promise(function(resolve, reject){
-      // Check which Ethereum network is used
-      web3.version.getNetwork(function(err, res){
-        let selectedNetwork = "";
-  
-        if (!err) {
-          if(res > 1000000000000) {
-            // I am not sure about this. I maybe wrong!
-            selectedNetwork = "Testrpc";
-          } else {
-            switch (res) {
-              case "1":
-                selectedNetwork = "Quorum de Eneko o Mainnet";
-                break
-              case "2":
-                selectedNetwork = "Morden";
-                break
-              case "3":
-                selectedNetwork = "Ropsten";
-                break
-              case "4":
-                selectedNetwork = "Rinkeby";
-                break
-              default:
-                selectedNetwork = "Unknown network = "+res;
-            }
-          }
-          resolve(selectedNetwork);
+  return new Promise(function(resolve, reject){
+    // Check which Ethereum network is used
+    web3.version.getNetwork(function(err, res){
+      let selectedNetwork = "";
+
+      if (!err) {
+        if(res > 1000000000000) {
+          // I am not sure about this. I maybe wrong!
+          selectedNetwork = "Testrpc";
         } else {
-          reject("getBlockTransactionCountPromise: "+err);
+          switch (res) {
+            case "1":
+              selectedNetwork = "Quorum de Eneko o Mainnet";
+              break
+            case "2":
+              selectedNetwork = "Morden";
+              break
+            case "3":
+              selectedNetwork = "Ropsten";
+              break
+            case "4":
+              selectedNetwork = "Rinkeby";
+              break
+            default:
+              selectedNetwork = "Unknown network = "+res;
+          }
         }
-      });
+        resolve(selectedNetwork);
+      } else {
+        reject("getBlockTransactionCountPromise: "+err);
+      }
     });
-  }
+  });
+}
 
 const getBlockPromise = function(blockNumber) {
-    return new Promise(function(resolve, reject){
-      web3.eth.getBlock(blockNumber, function(err, confirmedBlock){
-        if(!err) {
-          resolve([blockNumber, confirmedBlock]);
-        } else {
-          reject("getBlockPromise: "+err);
-        }
-      });
+  return new Promise(function(resolve, reject){
+    web3.eth.getBlock(blockNumber, function(err, confirmedBlock){
+      if(!err) {
+        resolve([blockNumber, confirmedBlock]);
+      } else {
+        reject("getBlockPromise: "+err);
+      }
     });
-  }
-  
-  const getBlockNumberPromise = function() {
-    return new Promise(function(resolve, reject){
-      web3.eth.getBlockNumber(function(err, blockNumber){
-        if(blockNumber) {
-          resolve(blockNumber);
-        } else {
-          reject("getBlockNumberPromise: "+err);
-        }
-      });
-    });
-  }
+  });
+}
 
-  const getBlockTransactionCountPromise = function(blockNumber) {
-    return new Promise(function(resolve, reject){
-      web3.eth.getBlockTransactionCount(blockNumber, function(err, numberOfTransactions){
-        if(!err) {
-          resolve([blockNumber, numberOfTransactions]);
+const getTransactionReceiptPromise = function(txhash) {
+  console.log("Waiting for the transaction to be mined ...");
+  return new Promise(function callback(resolve, reject){
+      web3.eth.getTransactionReceipt(txhash, function (err, result) {
+        if (!err && !result) {
+            // If there is no error and result, try again with a 0.5 sec delay
+            setTimeout(function() { callback(resolve, reject) }, 500);
         } else {
-          reject("getBlockTransactionCountPromise: "+err);
+          if (err){
+            reject(err);
+          } else {
+            console.log("Transaction done!");
+            resolve(result);
+          }
         }
       });
-    });
-  }
+  });
+}
 
-  const setCheckCert = function(data){
+const getBlockNumberPromise = function() {
+  return new Promise(function(resolve, reject){
+    web3.eth.getBlockNumber(function(err, blockNumber){
+      if(blockNumber) {
+        resolve(blockNumber);
+      } else {
+        reject("getBlockNumberPromise: "+err);
+      }
+    });
+  });
+}
+
+const getBlockTransactionCountPromise = function(blockNumber) {
+  return new Promise(function(resolve, reject){
+    web3.eth.getBlockTransactionCount(blockNumber, function(err, numberOfTransactions){
+      if(!err) {
+        resolve([blockNumber, numberOfTransactions]);
+      } else {
+        reject("getBlockTransactionCountPromise: "+err);
+      }
+    });
+  });
+}
+
+const getIsSenderInTheWhiteList = function(data){
+  return new Promise(function(resolve, reject){
+    const contract = createContract();
+    contract.isSenderInTheWhiteList(data.certHash, {from: data.sender} ,function (err, res) {
+      if(!err && res) {
+        resolve(res);
+      } else {
+        reject("Error getting whiteList");
+      }
+    });
+  });
+}
+
+
+
+
+
+  const setCheckExpiration = function(data){
     return new Promise(function(resolve, reject){
       const contract = createContract();
-      contract.getCertByHash(
-          data.certHash, 
-          {from: data.sender, gas: 2200000 }, function (err, txHash) {
+      contract.getCertByHash(data.certHash, {from: data.sender, gas: 2200000 }, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {
-          reject("Error setNewCertPromise: " +err);
+          reject(err);
+        }
+      });
+    });
+  }
+
+  const setInsertHistory = function(data){
+    return new Promise(function(resolve, reject){
+      const contract = createContract();
+      contract.insertHistory(data.certHash, {from: data.sender, gas: 2200000 }, function (err, txHash) {
+        if(txHash) {
+          resolve(txHash);
+        } else {
+          reject(err);
         }
       });
     });
@@ -171,21 +218,4 @@ const getBlockPromise = function(blockNumber) {
 
 
 
-  const getTransactionReceiptPromise = function(txhash) {
-    console.log("Waiting for the transaction to be mined ...");
-    return new Promise(function callback(resolve, reject){
-        web3.eth.getTransactionReceipt(txhash, function (err, result) {
-          if (!err && !result) {
-              // If there is no error and result, try again with a 0.5 sec delay
-              setTimeout(function() { callback(resolve, reject) }, 500);
-          } else {
-            if (err){
-              reject(err);
-            } else {
-              console.log("Transaction done!");
-              resolve(result);
-            }
-          }
-        });
-    });
-  }
+  

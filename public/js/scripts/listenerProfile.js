@@ -153,6 +153,12 @@ function getCheckingHistory() {
     const contract = createContract();
     contract.getAccessLogList({from: sender} ,function (err, res) {
       showResult(err, res, "Access logs");
+
+      for(i = 0; i < res.length ; i++) {
+        contract.getAccessLogByHash(res[i], {from: sender}, function(err, data) {
+          processAccessLogRecord(data);
+        });
+      }
     });
   } else {
     console.log("Web3 is not connected");
@@ -172,8 +178,6 @@ function getLastCert() {
       if(res != "0x") {
         showResult(err, res, "GetLastCert of " + sender + ":");
         getCertByHash(res, sender);
-        //addNewCertRow(data);
-        //addOptionToManager(data.certHash, data.certName);
       } else {
         console.log("Error getting certHash: " + res)
       }
@@ -229,15 +233,25 @@ document.getElementById('btnCheck').addEventListener('click', function(evt){
 /*Parse check certificate to json and send it*/
 function checkCert(data){
 
-  setCheckCert(data).then(function(txhash){
-    showWaitingIcon("#certInfo");
-    return getTransactionReceiptPromise(txhash)
-  }).then(function(receipt){
-    console.log("Transaction receipt object: " + JSON.stringify(receipt));
-    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+  getIsSenderInTheWhiteList(data).then(function(){
+    const contract = createContract();
+    contract.getCertByHash(data.certHash, {from: data.sender}, function(err, certInfo) {
+      if(certInfo[4].c[0] != certInfo[5].c[0] && certInfo[6]) {
+        console.log("checking")
+        setCheckExpiration(data);
+      }
+
+      setInsertHistory(data).then(function(txhash){
+        showWaitingIcon("#certInfo");
+        return getTransactionReceiptPromise(txhash)
+      }).then(function(receipt){
+        console.log("Transaction receipt object: " + JSON.stringify(receipt));
+        processCheckCertResponse(certInfo);
+      });
+    });
   }).catch(function(err){
-    alert("Error: " +err);
-  }); 
+    processCheckCertErrorResponse(err);
+  });
 }
 
 /********************************************************************************************
@@ -349,9 +363,9 @@ function addEntityToWhiteList(data){
     return getTransactionReceiptPromise(txhash)
   }).then(function(receipt){
     console.log("Transaction receipt object: " + JSON.stringify(receipt));
-    //document.getElementById('log').innerText = "Transaction receipt object: \n"+JSON.stringify(receipt, null, "\t");
+    processEntityToWhiteListResponse();
   }).catch(function(err){
-    alert("Error: " +err);
+    processEntityToWhiteListErrorResponse(err);
   });   
 }
 

@@ -65,53 +65,54 @@ function processCertificatesRecord(data) {
 Show all the checkings from a user's certificates
 /********************************************************************************************/
 function processAccessLogRecord(data) {
-  if(data){
-    addAccessLogRow(data);
-  }
+  //XSS vulnerable
+  let rowdata = undefined;
+  rowdata = "<tr>\
+  <td>"+epochDate(data[1])+"</td>\
+  <td>"+epochTime(data[1])+"</td>\
+  <td id='toolong'>"+data[3]+"</td>\
+  <td id='toolong'>"+data[2]+"</td>\
+  </tr>";
+  rowdata = rowdata.replace("", "");
+  let table = $("#logHistory")[0];
+  table.innerHTML = rowdata + table.innerHTML;
 }
 
 /********************************************************************************************
 Show success icon
 Insert a new certificate checking into the record
 /********************************************************************************************/
-function processCheckCertResponse(json) {
+function processCheckCertResponse(data) {
   console.log("Cert checked");
-  
-  if(json.result){
-    let data = json.result;
-    //addAccessLogRow(data);
 
-    let iconVerify = undefined;
-    if(data.isStilValid) {
-      iconVerify = "<button class='btn btn-success btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_check'></i> Valid certificate\
-                  </button>";
-    } else {
-      iconVerify = "<button class='btn btn-danger btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_simple-remove'></i> Expired certificate\
-                  </button>";
-    }
-
-    
-    rowdata = "<h6 class='title'>Creation Date: " + epochToDateTime(data.creationDate) + "</h6>\
-    <h6 class='title'>Issuer: " + data.issuer + "</h6>\
-    <h6 class='title'>Type: " + data.certType + "</h6>\
-    <h6 class='title'>Title: " + data.certName + "</h6>\
-    <h6 class='title'>" + iconVerify + "</h6>";
-    rowdata = rowdata.replace("", "");
-    let info = $("#certInfo")[0];
-    info.innerHTML = rowdata;
-    
-  
+  let iconVerify = undefined;
+  if(data[6]) {
+    iconVerify = "<button class='btn btn-success btn-round' type='button'>\
+                    <i class='now-ui-icons ui-1_check'></i> Valid certificate\
+                </button>";
   } else {
-    let data = json.error;
     iconVerify = "<button class='btn btn-danger btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_simple-remove'></i> "+data.message+"\
-                  </button>";
-    iconVerify = iconVerify.replace("", "");
-    let checking = $("#certInfo")[0];
-    checking.innerHTML = iconVerify;
+                    <i class='now-ui-icons ui-1_simple-remove'></i> Expired certificate\
+                </button>";
   }
+
+  rowdata = "<h6 class='title'>Creation Date: " + epochToDateTime(data[4]) + "</h6>\
+  <h6 class='title'>Issuer: " + data[1] + "</h6>\
+  <h6 class='title'>Type: " + data[2] + "</h6>\
+  <h6 class='title'>Title: " + data[3] + "</h6>\
+  <h6 class='title'>" + iconVerify + "</h6>";
+  rowdata = rowdata.replace("", "");
+  let info = $("#certInfo")[0];
+  info.innerHTML = rowdata;
+}
+
+function processCheckCertErrorResponse(err) {
+  iconVerify = "<button class='btn btn-danger btn-round' type='button'>\
+                    <i class='now-ui-icons ui-1_simple-remove'></i> "+err+"\
+                </button>";
+  iconVerify = iconVerify.replace("", "");
+  let checking = $("#certInfo")[0];
+  checking.innerHTML = iconVerify;
 }
 
 /********************************************************************************************
@@ -131,7 +132,6 @@ function processNewCertCreatedResponse() {
 }
 
 function processNewCertErrorResponse() {
-  let data = json.error;
   console.log("Error: " + data.message);
   iconSended = "<button class='btn btn-danger btn-round' type='button'>\
                       <i class='now-ui-icons ui-1_simple-remove'></i> "+data.message+"\
@@ -166,20 +166,24 @@ function processNewOwnerResponse(json) {
 /********************************************************************************************
 Show success icon
 /********************************************************************************************/
-function processEntityToWhiteListResponse(json) {
-  if(json.result) {
-    console.log("New entity allowed");
+function processEntityToWhiteListResponse() {
 
-    iconAdded = "<button class='btn btn-success btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_check'></i> Allowed!\
-                </button>";
-  } else {
-    let data = json.error;
-    console.log("Error: " + data.message);
-    iconAdded = "<button class='btn btn-danger btn-round' type='button'>\
-                      <i class='now-ui-icons ui-1_simple-remove'></i> "+data.message+"\
-                </button>";
-  }
+  console.log("New entity allowed");
+  iconAdded = "<button class='btn btn-success btn-round' type='button'>\
+                    <i class='now-ui-icons ui-1_check'></i> Allowed!\
+              </button>";
+
+  iconAdded = iconAdded.replace("", "");
+  let creating = $("#formAdd")[0];
+  creating.innerHTML = iconAdded;
+}
+
+function processEntityToWhiteListErrorResponse(err) {
+
+  iconAdded = "<button class='btn btn-danger btn-round' type='button'>\
+                    <i class='now-ui-icons ui-1_simple-remove'></i> "+err+"\
+              </button>";
+
   iconAdded = iconAdded.replace("", "");
   let creating = $("#formAdd")[0];
   creating.innerHTML = iconAdded;
@@ -263,23 +267,6 @@ function addNewCertRow(data) {
   rowdata = rowdata.replace("", "");
   let table = $("#logCert")[0];
   table.innerHTML = rowdata + table.innerHTML;
-}
-
-/********************************************************************************************
-Add new access log to the history record
-/********************************************************************************************/
-function addAccessLogRow(data) {
-  //XSS vulnerable
-  let rowdata = undefined;
-  rowdata = "<tr>\
-  <td>"+epochDate(data.creationDate)+"</td>\
-  <td>"+epochTime(data.creationDate)+"</td>\
-  <td id='toolong'>"+data.certHash+"</td>\
-  <td id='toolong'>"+data.user+"</td>\
-  </tr>";
-  rowdata = rowdata.replace("", "");
-  let table = $("#logHistory")[0];
-  table.innerHTML = table.innerHTML + rowdata;
 }
 
 /********************************************************************************************
