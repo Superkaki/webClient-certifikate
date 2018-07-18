@@ -235,30 +235,21 @@ function checkCert(data){
   getIsSenderInTheWhiteList(data).then(function(){
     const contract = createContract();
     contract.getCertByHash(data.certHash, {from: data.sender}, function(err, certInfo) {
-      showWaitingIcon("#certInfo");
       if(certInfo[4].c[0] != certInfo[5].c[0] && certInfo[6]) {
         console.log("checking")
-        setCheckExpiration(data).then(function(txhash) {
-          return getTransactionReceiptPromise(txhash).then(function(receipt){
-            console.log("Transaction receipt object: " + JSON.stringify(receipt));
-            getAndInsert(data, certInfo);
-          });
-        });
-      } else {
-        getAndInsert(data, certInfo);
-      } 
+        setCheckExpiration(data);
+      }
+
+      setInsertHistory(data).then(function(txhash){
+        showWaitingIcon("#certInfo");
+        return getTransactionReceiptPromise(txhash)
+      }).then(function(receipt){
+        console.log("Transaction receipt object: " + JSON.stringify(receipt));
+        processCheckCertResponse(certInfo);
+      });
     });
   }).catch(function(err){
     processCheckCertErrorResponse(err);
-  });
-}
-
-function getAndInsert(data, certInfo){
-  setInsertHistory(data).then(function(txhash){
-    return getTransactionReceiptPromise(txhash)
-  }).then(function(receipt){
-    console.log("Transaction receipt object: " + JSON.stringify(receipt));
-    processCheckCertResponse(certInfo);
   });
 }
 
