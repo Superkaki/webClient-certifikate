@@ -239,17 +239,21 @@ function checkCert(data){
         console.log("checking")
         setCheckExpiration(data);
       }
+      showAndInsert(data,certInfo);
 
-      setInsertHistory(data).then(function(txhash){
-        showWaitingIcon("#certInfo");
-        return getTransactionReceiptPromise(txhash)
-      }).then(function(receipt){
-        console.log("Transaction receipt object: " + JSON.stringify(receipt));
-        processCheckCertResponse(certInfo);
-      });
     });
   }).catch(function(err){
     processCheckCertErrorResponse(err);
+  });
+}
+
+function showAndInsert(data, certInfo){
+  setInsertHistory(data).then(function(txhash){
+    showWaitingIcon("#certInfo");
+    return getTransactionReceiptPromise(txhash)
+  }).then(function(receipt){
+    console.log("Transaction receipt object: " + JSON.stringify(receipt));
+    processCheckCertResponse(certInfo);
   });
 }
 
