@@ -51,6 +51,9 @@ const getNetworkPromise = function() {
             case "4":
               selectedNetwork = "Rinkeby";
               break
+            case "15":
+              selectedNetwork = "Testnet Ethereum de Borja";
+              break
             default:
               selectedNetwork = "Unknown network = "+res;
           }
