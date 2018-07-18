@@ -138,7 +138,7 @@ const getIsSenderInTheWhiteList = function(data){
   const setCheckExpiration = function(data){
     return new Promise(function(resolve, reject){
       const contract = createContract();
-      contract.getCertByHash(data.certHash, {from: data.sender, gas: 2200000 }, function (err, txHash) {
+      contract.checkExpiration(data.certHash, {from: data.sender, gas: 2200000 }, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {
