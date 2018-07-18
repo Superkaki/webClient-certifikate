@@ -124,7 +124,7 @@ const getBlockTransactionCountPromise = function(blockNumber) {
 const getIsSenderInTheWhiteList = function(data){
   return new Promise(function(resolve, reject){
     const contract = createContract();
-    contract.isSenderInTheWhiteList(data.certHash, {from: data.sender} ,function (err, res) {
+    contract.isSenderInTheWhiteList(data.certHash, {from: data.sender, gas: 220000} ,function (err, res) {
       if(!err && res) {
         resolve(res);
       } else {
@@ -141,7 +141,7 @@ const getIsSenderInTheWhiteList = function(data){
   const setCheckExpiration = function(data){
     return new Promise(function(resolve, reject){
       const contract = createContract();
-      contract.checkExpiration(data.certHash, {from: data.sender, gas: 2200000 }, function (err, txHash) {
+      contract.checkExpiration(data.certHash, {from: data.sender, gas: 220000}, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {
@@ -154,7 +154,7 @@ const getIsSenderInTheWhiteList = function(data){
   const setInsertHistory = function(data){
     return new Promise(function(resolve, reject){
       const contract = createContract();
-      contract.insertHistory(data.certHash, {from: data.sender, gas: 2200000 }, function (err, txHash) {
+      contract.insertHistory(data.certHash, {from: data.sender, gas: 220000}, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {
@@ -172,7 +172,7 @@ const getIsSenderInTheWhiteList = function(data){
           data.certType, 
           data.certName, 
           data.duration, 
-          {from: data.sender, gas: 2200000 }, function (err, txHash) {
+          {from: data.sender, gas: 1000000}, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {
@@ -188,7 +188,7 @@ const getIsSenderInTheWhiteList = function(data){
       contract.addOwner(
           data.certHash,
           data.address,
-          {from: data.sender, gas: 2200000 }, function (err, txHash) {
+          {from: data.sender, gas: 220000}, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {
@@ -204,7 +204,7 @@ const getIsSenderInTheWhiteList = function(data){
       contract.setEntityToWhiteList(
           data.certHash,
           data.address,
-          {from: data.sender, gas: 2200000 }, function (err, txHash) {
+          {from: data.sender, gas: 220000}, function (err, txHash) {
         if(txHash) {
           resolve(txHash);
         } else {

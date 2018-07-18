@@ -38,21 +38,34 @@ function processCheckCertResponse(data) {
   console.log("Cert checked");
 
   let iconVerify = undefined;
-  if(data[6]) {
-    iconVerify = "<button class='btn btn-success btn-round' type='button'>\
-                    <i class='now-ui-icons ui-1_check'></i> Valid certificate\
-                </button>";
+  if(!data[6]) {
+    iconVerify = "<h6 class='title'>\
+                    <button class='btn btn-danger btn-round' type='button'>\
+                      <i class='now-ui-icons ui-1_simple-remove'></i> Expired certificate\
+                    </button>\
+                  </h6>";
+  } else if(data[4].c[0] == data[5].c[0]) {
+    iconVerify = "<h6 class='title'>\
+                    <button class='btn btn-success btn-round' type='button'>\
+                      <i class='now-ui-icons ui-1_check'></i> Valid certificate\
+                    </button>\
+                  </h6>\
+                  <h6 class='title'>Expiration Date: --</h6>";
   } else {
-    iconVerify = "<button class='btn btn-danger btn-round' type='button'>\
-                    <i class='now-ui-icons ui-1_simple-remove'></i> Expired certificate\
-                </button>";
+    iconVerify = "<h6 class='title'>\
+                    <button class='btn btn-success btn-round' type='button'>\
+                      <i class='now-ui-icons ui-1_check'></i> Valid certificate\
+                    </button>\
+                  </h6>\
+                  <h6 class='title'>Expiration Date: " + epochToDateTime(data[5]) + "</h6>";
   }
 
   rowdata = "<h6 class='title'>Creation Date: " + epochToDateTime(data[4]) + "</h6>\
   <h6 class='title'>Issuer: " + data[1] + "</h6>\
   <h6 class='title'>Type: " + data[2] + "</h6>\
   <h6 class='title'>Title: " + data[3] + "</h6>\
-  <h6 class='title'>" + iconVerify + "</h6>";
+  " + iconVerify;
+
   rowdata = rowdata.replace("", "");
   let info = $("#certInfo")[0];
   info.innerHTML = rowdata;
