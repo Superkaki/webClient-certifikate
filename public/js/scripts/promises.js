@@ -208,7 +208,7 @@ const getIsSenderInTheWhiteList = function(data){
         if(txHash) {
           resolve(txHash);
         } else {
-          reject("Error setNewOwnerPromise: " +err);
+          reject("Error setNewEntityPromise: " +err);
         }
       });
     });
